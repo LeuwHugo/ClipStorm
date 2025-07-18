@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/auth-utils';
 import { toast } from 'sonner';
 import React from 'react';
 
@@ -57,20 +58,9 @@ function PaymentForm({
     setIsProcessing(true);
 
     try {
-      // Get the current session token
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        toast.error('Authentication required. Please log in again.');
-        return;
-      }
       // Create payment intent on the server
-      const response = await fetch('/api/payments/create-campaign-payment', {
+      const response = await authenticatedFetch('/api/payments/create-campaign-payment', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
         body: JSON.stringify({
           amount,
           campaignId,
@@ -196,19 +186,8 @@ export function PaymentDialog({
 
     setLoading(true);
     try {
-      // Get the current session token
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        toast.error('Authentication required. Please log in again.');
-        return;
-      }
-      const response = await fetch('/api/payments/create-campaign-payment', {
+      const response = await authenticatedFetch('/api/payments/create-campaign-payment', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
         body: JSON.stringify({
           amount,
           campaignId,
