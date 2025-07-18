@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createCampaignPaymentIntent } from '@/lib/stripe-server';
 import { supabase } from '@/lib/supabase';
-import { headers } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== Payment Intent Creation Request ===');
+    
     const { amount, campaignId, creatorId } = await request.json();
+    console.log('Request data:', { amount, campaignId, creatorId });
 
     // Validate required fields
     if (!amount || !campaignId || !creatorId) {
@@ -23,11 +25,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get authorization header
-    const headersList = headers();
-    const authorization = headersList.get('authorization');
+    // Get authorization header from request
+    const authorization = request.headers.get('authorization');
+    console.log('Authorization header present:', !!authorization);
 
     if (!authorization) {
+      console.log('Missing authorization header');
       return NextResponse.json(
         { error: 'Authorization header required' },
         { status: 401 }
@@ -35,11 +38,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify user is authenticated and is the creator
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authorization.replace('Bearer ', '')
-    );
+    const token = authorization.replace('Bearer ', '');
+    console.log('Token length:', token.length);
+    
+    // Create a Supabase client with the user's token
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    console.log('Auth result:', { user: !!user, error: !!authError });
 
     if (authError || !user || user.id !== creatorId) {
+      console.log('Auth failed:', { authError, userId: user?.id, expectedCreatorId: creatorId });
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -53,6 +60,8 @@ export async function POST(request: NextRequest) {
       .eq('id', campaignId)
       .eq('creator_id', creatorId)
       .single();
+
+    console.log('Campaign query result:', { campaign: !!campaign, error: !!campaignError });
 
     if (campaignError || !campaign) {
       return NextResponse.json(
@@ -70,6 +79,8 @@ export async function POST(request: NextRequest) {
         campaign_title: campaign.title,
       }
     );
+
+    console.log('Payment intent created successfully:', paymentIntent.id);
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,

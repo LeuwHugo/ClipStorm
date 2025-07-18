@@ -62,6 +62,7 @@ function PaymentForm({
       
       if (sessionError || !session) {
         toast.error('Authentication required. Please log in again.');
+        setIsProcessing(false);
         return;
       }
       // Create payment intent on the server
@@ -78,10 +79,17 @@ function PaymentForm({
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast.error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        setIsProcessing(false);
+        return;
+      }
       const { clientSecret, error: serverError } = await response.json();
 
       if (serverError) {
         toast.error(serverError);
+        setIsProcessing(false);
         return;
       }
 
@@ -201,6 +209,7 @@ export function PaymentDialog({
       
       if (sessionError || !session) {
         toast.error('Authentication required. Please log in again.');
+        setLoading(false);
         return;
       }
       const response = await fetch('/api/payments/create-campaign-payment', {
@@ -216,10 +225,20 @@ export function PaymentDialog({
         }),
       });
 
+      console.log('Payment initialization response:', response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Payment initialization error:', errorData);
+        toast.error(errorData.error || `Failed to initialize payment: ${response.status}`);
+        setLoading(false);
+        return;
+      }
       const data = await response.json();
 
       if (data.error) {
         toast.error(data.error);
+        setLoading(false);
         return;
       }
 
