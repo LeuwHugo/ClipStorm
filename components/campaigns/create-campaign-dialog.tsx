@@ -36,6 +36,7 @@ import { Campaign } from '@/lib/types';
 import { supabase, uploadImage, getImageUrl } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
+import { PaymentDialog } from './payment-dialog';
 
 const createCampaignSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
@@ -69,6 +70,8 @@ export function CreateCampaignDialog({
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [pendingCampaign, setPendingCampaign] = useState<any>(null);
 
   const form = useForm<CreateCampaignForm>({
     resolver: zodResolver(createCampaignSchema),
@@ -168,7 +171,7 @@ export function CreateCampaignDialog({
       ? data.paymentAmount 
       : data.paymentAmount * 1000; // Convert thousands to millions
 
-    const campaign: Omit<Campaign, 'id' | 'createdAt' | 'updatedAt'> = {
+    const campaignData: Omit<Campaign, 'id' | 'createdAt' | 'updatedAt'> = {
       creatorId: user.id,
       title: data.title,
       videoUrl: data.videoUrl,
@@ -178,17 +181,32 @@ export function CreateCampaignDialog({
         minimumViews: data.minimumViews,
       },
       rules: data.rules.filter(rule => rule.trim() !== ''),
-      status: 'active',
+      status: 'paused', // Start as paused until payment is completed
       totalBudget: data.totalBudget,
       remainingBudget: data.totalBudget,
       expiresAt: data.expiresAt ? new Date(data.expiresAt) : undefined,
     };
 
-    onCreateCampaign(campaign);
-    form.reset();
-    setRules(['']);
-    removeThumbnail();
-    toast.success('Campaign created successfully!');
+    // Store campaign data and show payment dialog
+    setPendingCampaign(campaignData);
+    setShowPaymentDialog(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    if (pendingCampaign) {
+      // Update campaign status to active after successful payment
+      const activeCampaign = { ...pendingCampaign, status: 'active' as const };
+      onCreateCampaign(activeCampaign);
+      
+      // Reset form and state
+      form.reset();
+      setRules(['']);
+      removeThumbnail();
+      setPendingCampaign(null);
+      setShowPaymentDialog(false);
+      
+      toast.success('Campaign created and funded successfully!');
+    }
   };
 
   const watchedPaymentAmount = form.watch('paymentAmount');
@@ -469,7 +487,7 @@ export function CreateCampaignDialog({
 
             <div className="flex gap-3 pt-4">
               <Button type="submit" className="flex-1" disabled={uploading}>
-                Create Campaign
+                Create & Fund Campaign
               </Button>
               <Button
                 type="button"
@@ -481,6 +499,18 @@ export function CreateCampaignDialog({
             </div>
           </form>
         </Form>
+
+        {/* Payment Dialog */}
+        {pendingCampaign && (
+          <PaymentDialog
+            open={showPaymentDialog}
+            onOpenChange={setShowPaymentDialog}
+            campaignTitle={pendingCampaign.title}
+            amount={pendingCampaign.totalBudget || 0}
+            campaignId={pendingCampaign.id || 'pending'}
+            onPaymentSuccess={handlePaymentSuccess}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

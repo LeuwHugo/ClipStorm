@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SubmitClipDialog } from '@/components/campaigns/submit-clip-dialog';
+import { PayoutClipperDialog } from '@/components/campaigns/payout-clipper-dialog';
 import { Campaign, ClipSubmission } from '@/lib/types';
 
 export default function CampaignDetailsClient() {
@@ -47,6 +48,8 @@ export default function CampaignDetailsClient() {
   const [activeTab, setActiveTab] = useState('overview');
   const [playingUrl, setPlayingUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showPayoutDialog, setShowPayoutDialog] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState<ClipSubmission | null>(null);
   // Calculate approved submissions
   const approvedSubmissions = submissions.filter(sub => sub.status === 'approved');
 
@@ -553,6 +556,17 @@ export default function CampaignDetailsClient() {
                         <ExternalLink className="h-4 w-4 mr-2" />
                         View Clip
                       </Button>
+                      {submission.status === 'approved' && submission.paymentAmount && (
+                        <Button
+                          onClick={() => {
+                            setSelectedSubmission(submission);
+                            setShowPayoutDialog(true);
+                          }}
+                          size="sm"
+                        >
+                          Pay ${submission.paymentAmount}
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -566,6 +580,18 @@ export default function CampaignDetailsClient() {
           onOpenChange={setShowSubmitDialog}
           campaign={campaign}
         />
+
+        {selectedSubmission && (
+          <PayoutClipperDialog
+            open={showPayoutDialog}
+            onOpenChange={setShowPayoutDialog}
+            submission={selectedSubmission}
+            onPayoutSuccess={() => {
+              // Refresh submissions data
+              window.location.reload();
+            }}
+          />
+        )}
       </motion.div>
     </div>
   );

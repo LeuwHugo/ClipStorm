@@ -31,6 +31,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useUserRole } from '@/hooks/use-user-role';
 import { useTranslations } from '@/hooks/use-translations';
 import { AvatarUpload } from '@/components/profile/avatar-upload';
+import { StripeConnectSetup } from '@/components/profile/stripe-connect-setup';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
@@ -57,6 +58,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentAvatar, setCurrentAvatar] = useState<string>('');
+  const [stripeAccountId, setStripeAccountId] = useState<string>('');
   const [campaignStats, setCampaignStats] = useState<CampaignStats>({
     totalCampaigns: 0,
     activeCampaigns: 0,
@@ -123,6 +125,7 @@ export default function ProfilePage() {
           portfolio: data.portfolio || [],
         });
         setCurrentAvatar(data.avatar || '');
+        setStripeAccountId(data.stripe_account_id || '');
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -534,6 +537,14 @@ export default function ProfilePage() {
 
           {/* Campaign Focus Tab */}
           <TabsContent value="campaign-focus" className="space-y-6">
+            {/* Stripe Connect Setup for Clippers */}
+            {isClipper && (
+              <StripeConnectSetup
+                stripeAccountId={stripeAccountId}
+                onAccountCreated={(accountId) => setStripeAccountId(accountId)}
+              />
+            )}
+            
             {isCreator ? (
               <Card>
                 <CardHeader>
