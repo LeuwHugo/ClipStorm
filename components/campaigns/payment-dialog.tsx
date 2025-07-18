@@ -14,6 +14,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
+import { supabase } from '@/lib/supabase';
+import { authenticatedFetch } from '@/lib/auth-utils';
 import { toast } from 'sonner';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -54,14 +56,10 @@ function PaymentForm({
 
     setIsProcessing(true);
 
-    try {
+      }
       // Create payment intent on the server
-      const response = await fetch('/api/payments/create-campaign-payment', {
+      const response = await authenticatedFetch('/api/payments/create-campaign-payment', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.access_token}`,
-        },
         body: JSON.stringify({
           amount,
           campaignId,
@@ -186,13 +184,9 @@ export function PaymentDialog({
     if (!user || !open) return;
 
     setLoading(true);
-    try {
-      const response = await fetch('/api/payments/create-campaign-payment', {
+      }
+      const response = await authenticatedFetch('/api/payments/create-campaign-payment', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.access_token}`,
-        },
         body: JSON.stringify({
           amount,
           campaignId,
@@ -217,6 +211,7 @@ export function PaymentDialog({
   };
 
   // Initialize payment when dialog opens
+  React.useEffect(() => {
   React.useEffect(() => {
     if (open) {
       initializePayment();

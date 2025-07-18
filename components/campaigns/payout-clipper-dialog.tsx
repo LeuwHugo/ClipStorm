@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ClipSubmission } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 interface PayoutClipperDialogProps {
@@ -37,11 +38,18 @@ export function PayoutClipperDialog({
 
     setIsProcessing(true);
     try {
+      // Get the current session token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        toast.error('Authentication required. Please log in again.');
+        return;
+      }
       const response = await fetch('/api/payments/payout-clipper', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.access_token}`,
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           submissionId: submission.id,

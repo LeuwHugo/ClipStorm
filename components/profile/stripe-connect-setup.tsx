@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/use-auth';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 interface StripeConnectSetupProps {
@@ -22,11 +23,18 @@ export function StripeConnectSetup({ stripeAccountId, onAccountCreated }: Stripe
 
     setLoading(true);
     try {
+      // Get the current session token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        toast.error('Authentication required. Please log in again.');
+        return;
+      }
       const response = await fetch('/api/payments/create-connect-account', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.access_token}`,
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           email: user.email,
@@ -57,11 +65,18 @@ export function StripeConnectSetup({ stripeAccountId, onAccountCreated }: Stripe
 
     setLoading(true);
     try {
+      // Get the current session token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        toast.error('Authentication required. Please log in again.');
+        return;
+      }
       const response = await fetch('/api/payments/create-login-link', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.access_token}`,
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           accountId: stripeAccountId,
