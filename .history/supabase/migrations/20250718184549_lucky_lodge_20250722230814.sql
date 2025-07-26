@@ -11,21 +11,6 @@
   - Update constraints for payment flow
 */
 
--- Ajout de la valeur 'draft' à l'énumération campaign_status
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_type t
-    JOIN pg_enum e ON t.oid = e.enumtypid
-    WHERE t.typname = 'campaign_status' AND e.enumlabel = 'draft'
-  ) THEN
-    ALTER TYPE campaign_status ADD VALUE 'draft';
-  END IF;
-END $$;
-
--- Mettre à jour la colonne status de campaigns pour que la valeur par défaut soit 'draft'
-ALTER TABLE campaigns ALTER COLUMN status SET DEFAULT 'draft';
-
 -- Add Stripe payment intent ID to campaigns
 DO $$
 BEGIN

@@ -32,7 +32,6 @@ import { useUserRole } from '@/hooks/use-user-role';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { PaymentDialog } from './payment-dialog';
-import { deleteImage } from '@/lib/supabase';
 
 interface CampaignCardProps {
   campaign: Campaign;
@@ -62,8 +61,6 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
   const isOwner = user?.id === campaign.creatorId;
   const canManage = isCreator && isOwner;
   const canSubmit = isClipper && campaign.status === 'active';
-  // Bouton pause/activate uniquement pour active/paused
-  const canToggleStatus = canManage && (campaign.status === 'active' || campaign.status === 'paused');
 
   const handleCreatorClick = () => {
     router.push(`/profile/${campaign.creatorId}`);
@@ -112,21 +109,6 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
     
     setLoading(true);
     try {
-      // Supprimer l'image du bucket si présente
-      if (campaign.thumbnail) {
-        // Extraire le nom du bucket et le chemin de l'image
-        // Supposons que le thumbnail est du type 'https://.../storage/v1/object/public/<bucket>/<path>'
-        const match = campaign.thumbnail.match(/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
-        if (match) {
-          const bucket = match[1];
-          const path = match[2];
-          try {
-            await deleteImage(bucket, path);
-          } catch (imgErr) {
-            console.warn('Image deletion failed:', imgErr);
-          }
-        }
-      }
       const { error } = await supabase
         .from('campaigns')
         .delete()
@@ -136,10 +118,6 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
 
       onDelete(campaign.id);
       toast.success('Campaign deleted successfully!');
-      // Si le freeze persiste, forcer le reload de la page
-      if (typeof window !== 'undefined') {
-        window.location.reload();
-      }
     } catch (error) {
       console.error('Error deleting campaign:', error);
       toast.error('Failed to delete campaign');
@@ -156,8 +134,8 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
 
   return (
     <>
-      <Card className="group hover:shadow-lg transition-all duration-200 h-[600px] flex flex-col">
-        <CardHeader className="pb-3 flex-shrink-0">
+      <Card className="group hover:shadow-lg transition-all duration-200">
+        <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -203,8 +181,6 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
                     Edit Campaign
                   </DropdownMenuItem>
                   
-                  {/* Pause/Activate uniquement pour active/paused */}
-                  {canToggleStatus && (
                   <DropdownMenuItem onClick={handleStatusToggle} disabled={loading}>
                     {campaign.status === 'active' ? (
                       <>
@@ -218,7 +194,6 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
                       </>
                     )}
                   </DropdownMenuItem>
-                  )}
                   
                   <DropdownMenuSeparator />
                   
@@ -236,8 +211,8 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4 flex-1 flex flex-col">
-          <div className="relative aspect-video rounded-lg overflow-hidden flex-shrink-0">
+        <CardContent className="space-y-4">
+          <div className="relative aspect-video rounded-lg overflow-hidden">
             <img
               src={campaign.thumbnail}
               alt={campaign.title}
@@ -255,7 +230,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
             </div>
           </div>
 
-          <div className="space-y-3 flex-shrink-0">
+          <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Budget Used</span>
               <span className="font-medium">{budgetUsed.toFixed(1)}%</span>
@@ -276,7 +251,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-2 flex-shrink-0">
+          <div className="grid grid-cols-2 gap-4 pt-2">
             <div className="flex items-center gap-2 text-sm">
               <Users className="h-4 w-4 text-muted-foreground" />
               <span>{submissionStats?.totalSubmissions || 0} submissions</span>
@@ -288,32 +263,21 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
           </div>
 
           {campaign.expiresAt && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground flex-shrink-0">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4" />
               <span>Expires {campaign.expiresAt.toLocaleDateString()}</span>
             </div>
           )}
 
-          {/* Spacer pour pousser les boutons vers le bas */}
-          <div className="flex-1"></div>
-
-          {/* Action Buttons - toujours en bas */}
-          <div className="flex gap-2 flex-shrink-0">
+          {/* Action Buttons */}
+          <div className="flex gap-2">
             <Button 
               className="flex-1" 
               onClick={() => router.push(`/campaigns/${campaign.id}`)}
             >
               View Campaign
             </Button>
-            {canToggleStatus && (
-              <Button
-                variant="outline"
-                onClick={handleStatusToggle}
-                disabled={loading}
-              >
-                {campaign.status === 'active' ? 'Pause' : 'Activate'}
-              </Button>
-            )}
+            
             {/* Submit Clip Button for Clippers */}
             {canSubmit && (
               <Button 

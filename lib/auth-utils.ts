@@ -1,3 +1,4 @@
+// lib/auth-utils.ts
 import { supabase } from './supabase';
 
 /**

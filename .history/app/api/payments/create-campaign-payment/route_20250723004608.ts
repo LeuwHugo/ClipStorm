@@ -56,16 +56,16 @@ export async function POST(request: NextRequest) {
 
         /** ── Use an authenticated client so RLS sees the caller ── */
     const supabaseWithAuth = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       { global: { headers: { Authorization: `Bearer ${token}` } } }
     );
 
-    // Vérifier que la campagne est en statut 'draft' avant de permettre le paiement
-    const { data: campaign, error: campaignError } = await supabaseWithAuth
+    // Verify campaign exists and belongs to creator
+   const { data: campaign, error: campaignError } = await supabaseWithAuth
       .from('campaigns')
-      .select('id, creator_id, title, total_budget, status')
-      .eq('id', campaignId)
+      .select('id, creator_id, title, total_budget')
+     .eq('id', campaignId)
       .single();
 
     console.log('Campaign query result:', { campaign: !!campaign, error: !!campaignError });
@@ -74,13 +74,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Campaign not found or unauthorized' },
         { status: 404 }
-      );
-    }
-
-    if (campaign.status !== 'draft') {
-      return NextResponse.json(
-        { error: 'Only draft campaigns can be paid for.' },
-        { status: 400 }
       );
     }
 

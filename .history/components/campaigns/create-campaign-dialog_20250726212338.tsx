@@ -63,7 +63,7 @@ type CreateCampaignForm = z.infer<typeof createCampaignSchema>;
 interface CreateCampaignDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateCampaign: (campaign: Campaign) => void;
+  onCreateCampaign: (campaign: Omit<Campaign, 'id' | 'createdAt' | 'updatedAt'>) => void;
 }
 
 export function CreateCampaignDialog({
@@ -218,8 +218,8 @@ export function CreateCampaignDialog({
         status: row.status,
         totalBudget: row.total_budget,
         remainingBudget: row.remaining_budget,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
+        createdAt: row.created_at ? new Date(row.created_at) : undefined,
+        updatedAt: row.updated_at ? new Date(row.updated_at) : undefined,
         expiresAt: row.expires_at ? new Date(row.expires_at) : undefined,
       });
       onOpenChange(false);

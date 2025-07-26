@@ -97,16 +97,6 @@ function PaymentForm({
         return;
       }
 
-      // Vérifier que le clientSecret est présent
-      if (!clientSecret) {
-        toast.error('Payment initialization failed. Please try again.');
-        setIsProcessing(false);
-        return;
-      }
-
-      // Extraire l'ID du PaymentIntent du clientSecret
-      const paymentIntentId = clientSecret.split('_secret_')[0];
-
       // First, submit the form to validate the payment method
       const { error: submitError } = await elements.submit();
       
@@ -127,40 +117,8 @@ function PaymentForm({
       });
 
       if (error) {
-        console.error('Stripe payment error:', error);
-        
-        // Gestion spécifique des erreurs Stripe
-        if (error.type === 'card_error' || error.type === 'validation_error') {
-          toast.error(error.message || 'Payment validation failed');
-        } else if (error.type === 'invalid_request_error') {
-          toast.error('Invalid payment request. Please try again.');
-        } else {
-          toast.error(error.message || 'Payment failed');
-        }
+        toast.error(error.message || 'Payment failed');
       } else {
-        // Mise à jour manuelle de la campagne en attendant le webhook
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            const { error: updateError } = await supabase
-              .from('campaigns')
-              .update({
-                status: 'active',
-                payment_status: 'paid',
-                total_budget: amount,
-                remaining_budget: amount,
-                stripe_payment_intent_id: paymentIntentId, // Extraire l'ID du PaymentIntent
-              })
-              .eq('id', campaignId);
-
-            if (updateError) {
-              console.error('Error updating campaign status:', updateError);
-            }
-          }
-        } catch (updateErr) {
-          console.error('Error in manual campaign update:', updateErr);
-        }
-
         toast.success('Payment successful! Your campaign is now active.');
         onPaymentSuccess();
         onClose();

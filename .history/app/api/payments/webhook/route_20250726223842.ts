@@ -11,17 +11,11 @@ const supabase = createClient(
 );
 
 export async function POST(request: NextRequest) {
-  console.log('=== Webhook received ===');
-  
   const body = await request.text();
   const headersList = headers();
   const signature = headersList.get('stripe-signature');
 
-  console.log('Signature present:', !!signature);
-  console.log('Body length:', body.length);
-
   if (!signature) {
-    console.log('No signature provided');
     return NextResponse.json(
       { error: 'No signature provided' },
       { status: 400 }
@@ -36,8 +30,6 @@ export async function POST(request: NextRequest) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
-    console.log('Event type:', event.type);
-    console.log('Event data:', JSON.stringify(event.data, null, 2));
   } catch (err) {
     console.error('Webhook signature verification failed:', err);
     return NextResponse.json(
@@ -49,17 +41,14 @@ export async function POST(request: NextRequest) {
   try {
     switch (event.type) {
       case 'payment_intent.succeeded':
-        console.log('Processing payment_intent.succeeded');
         await handlePaymentIntentSucceeded(event.data.object);
         break;
       
       case 'account.updated':
-        console.log('Processing account.updated');
         await handleAccountUpdated(event.data.object);
         break;
       
       case 'transfer.created':
-        console.log('Processing transfer.created');
         await handleTransferCreated(event.data.object);
         break;
       
@@ -67,7 +56,6 @@ export async function POST(request: NextRequest) {
         console.log(`Unhandled event type: ${event.type}`);
     }
 
-    console.log('Webhook processed successfully');
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error('Error processing webhook:', error);
@@ -79,48 +67,29 @@ export async function POST(request: NextRequest) {
 }
 
 async function handlePaymentIntentSucceeded(paymentIntent: any) {
-  console.log('=== handlePaymentIntentSucceeded ===');
-  console.log('PaymentIntent:', JSON.stringify(paymentIntent, null, 2));
-  
   const { metadata, id: paymentIntentId, amount } = paymentIntent;
   
-  console.log('Metadata:', metadata);
-  console.log('PaymentIntentId:', paymentIntentId);
-  console.log('Amount:', amount);
-  
   if (metadata.type === 'campaign_budget') {
-    console.log('Processing campaign_budget payment');
-    
     // Convert amount from cents to dollars
     const budgetAmount = amount ? amount / 100 : 0;
-    console.log('Budget amount:', budgetAmount);
     
     // Update campaign with payment confirmation
-    const updateData = {
-      status: 'active',
-      payment_status: 'paid',
-      total_budget: budgetAmount,
-      remaining_budget: budgetAmount,
-      stripe_payment_intent_id: paymentIntentId,
-    };
-    
-    console.log('Updating campaign with data:', updateData);
-    console.log('Campaign ID:', metadata.campaign_id);
-    
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('campaigns')
-      .update(updateData)
-      .eq('id', metadata.campaign_id)
-      .select();
+      .update({
+        status: 'active',
+        payment_status: 'paid',
+        total_budget: budgetAmount,
+        remaining_budget: budgetAmount,
+        stripe_payment_intent_id: paymentIntentId,
+      })
+      .eq('id', metadata.campaign_id);
 
     if (error) {
       console.error('Error updating campaign after payment:', error);
     } else {
-      console.log('Campaign updated successfully:', data);
       console.log(`Campaign ${metadata.campaign_id} budget payment confirmed with $${budgetAmount}`);
     }
-  } else {
-    console.log('Not a campaign_budget payment, metadata.type:', metadata.type);
   }
 }
 

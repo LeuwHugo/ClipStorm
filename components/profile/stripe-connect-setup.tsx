@@ -1,3 +1,4 @@
+// components/profile/stripe-connect-setup.tsx
 'use client';
 
 import { useState } from 'react';

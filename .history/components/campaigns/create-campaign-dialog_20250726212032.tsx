@@ -63,7 +63,7 @@ type CreateCampaignForm = z.infer<typeof createCampaignSchema>;
 interface CreateCampaignDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateCampaign: (campaign: Campaign) => void;
+  onCreateCampaign: (campaign: Omit<Campaign, 'id' | 'createdAt' | 'updatedAt'>) => void;
 }
 
 export function CreateCampaignDialog({
@@ -204,24 +204,7 @@ export function CreateCampaignDialog({
       if (error || !row) throw error;
 
       // Fermer le formulaire et rafraîchir la liste
-      onCreateCampaign({
-        id: row.id,
-        creatorId: row.creator_id,
-        title: row.title,
-        videoUrl: row.video_url,
-        thumbnail: row.thumbnail,
-        payPerView: {
-          amountPerMillionViews: row.amount_per_million_views,
-          minimumViews: row.minimum_views,
-        },
-        rules: row.rules,
-        status: row.status,
-        totalBudget: row.total_budget,
-        remainingBudget: row.remaining_budget,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-        expiresAt: row.expires_at ? new Date(row.expires_at) : undefined,
-      });
+      onCreateCampaign({ ...campaignData, id: row.id });
       onOpenChange(false);
 
       setPendingCampaign(null); // Ne pas ouvrir la popup de paiement automatiquement

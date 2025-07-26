@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
         /** ── Use an authenticated client so RLS sees the caller ── */
     const supabaseWithAuth = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       { global: { headers: { Authorization: `Bearer ${token}` } } }
     );

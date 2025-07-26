@@ -269,7 +269,6 @@ export default function CampaignsPage() {
           {isCreator && (
             <TabsList>
               <TabsTrigger value="all">All Campaigns</TabsTrigger>
-              <TabsTrigger value="draft">Draft</TabsTrigger>
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="paused">Paused</TabsTrigger>
               <TabsTrigger value="completed">Completed</TabsTrigger>

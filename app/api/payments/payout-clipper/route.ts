@@ -1,3 +1,4 @@
+// app/api/payments/payout-clipper/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { transferToClipper } from '@/lib/stripe-server';
 import { supabase } from '@/lib/supabase';

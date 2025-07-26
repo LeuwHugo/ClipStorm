@@ -138,9 +138,80 @@ export default function CampaignsPage() {
     return matchesSearch && matchesTab;
   });
 
-  const handleCreateCampaign = (newCampaign: Campaign) => {
-    setCampaigns([newCampaign, ...campaigns]);
-    setShowCreateDialog(false);
+  const handleCreateCampaign = async (newCampaign: Omit<Campaign, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!user) return;
+
+    try {
+      // First, ensure the user exists in the users table
+      const { data: existingUser, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (userError && userError.code === 'PGRST116') {
+        // User doesn't exist, create them first
+        const { error: insertUserError } = await supabase
+          .from('users')
+          .insert({
+            id: user.id,
+            email: user.email || '',
+            display_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+            role: 'creator',
+            avatar: user.user_metadata?.avatar_url,
+          });
+
+        if (insertUserError) {
+          console.error('Error creating user:', insertUserError);
+          console.error('Failed to create user profile');
+          return;
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('campaigns')
+        .insert({
+          creator_id: user.id,
+          title: newCampaign.title,
+          video_url: newCampaign.videoUrl,
+          thumbnail: newCampaign.thumbnail,
+          amount_per_million_views: newCampaign.payPerView.amountPerMillionViews,
+          minimum_views: newCampaign.payPerView.minimumViews,
+          rules: newCampaign.rules,
+          status: newCampaign.status,
+          total_budget: newCampaign.totalBudget,
+          remaining_budget: newCampaign.remainingBudget,
+          expires_at: newCampaign.expiresAt?.toISOString(),
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      const campaign: Campaign = {
+        id: data.id,
+        creatorId: data.creator_id,
+        title: data.title,
+        videoUrl: data.video_url,
+        thumbnail: data.thumbnail,
+        payPerView: {
+          amountPerMillionViews: data.amount_per_million_views,
+          minimumViews: data.minimum_views,
+        },
+        rules: data.rules,
+        status: data.status as 'active' | 'paused' | 'completed',
+        totalBudget: data.total_budget,
+        remainingBudget: data.remaining_budget,
+        createdAt: new Date(data.created_at),
+        updatedAt: new Date(data.updated_at),
+        expiresAt: data.expires_at ? new Date(data.expires_at) : undefined,
+      };
+      
+      setCampaigns([campaign, ...campaigns]);
+      setShowCreateDialog(false);
+    } catch (error) {
+      console.error('Error creating campaign:', error);
+    }
   };
 
   const stats = {
@@ -269,7 +340,6 @@ export default function CampaignsPage() {
           {isCreator && (
             <TabsList>
               <TabsTrigger value="all">All Campaigns</TabsTrigger>
-              <TabsTrigger value="draft">Draft</TabsTrigger>
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="paused">Paused</TabsTrigger>
               <TabsTrigger value="completed">Completed</TabsTrigger>

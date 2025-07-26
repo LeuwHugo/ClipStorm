@@ -33,16 +33,11 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Campaign } from '@/lib/types';
-import { uploadImage, getImageUrl } from '@/lib/supabase';
+import { supabase, uploadImage, getImageUrl } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
 import { PaymentDialog } from './payment-dialog';
 import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-);
 
 const createCampaignSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
@@ -63,7 +58,7 @@ type CreateCampaignForm = z.infer<typeof createCampaignSchema>;
 interface CreateCampaignDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateCampaign: (campaign: Campaign) => void;
+  onCreateCampaign: (campaign: Omit<Campaign, 'id' | 'createdAt' | 'updatedAt'>) => void;
 }
 
 export function CreateCampaignDialog({
@@ -186,7 +181,7 @@ export function CreateCampaignDialog({
       amount_per_million_views: amountPerMillionViews,
       minimum_views: data.minimumViews,
       rules: data.rules.filter(rule => rule.trim() !== ''),
-      status: 'draft', // Start as draft until payment is completed
+      status: 'paused', // Start as paused until payment is completed
       total_budget: data.totalBudget,
       remaining_budget: data.totalBudget,
       expires_at: data.expiresAt === "" ? null : data.expiresAt,
@@ -203,28 +198,9 @@ export function CreateCampaignDialog({
 
       if (error || !row) throw error;
 
-      // Fermer le formulaire et rafraîchir la liste
-      onCreateCampaign({
-        id: row.id,
-        creatorId: row.creator_id,
-        title: row.title,
-        videoUrl: row.video_url,
-        thumbnail: row.thumbnail,
-        payPerView: {
-          amountPerMillionViews: row.amount_per_million_views,
-          minimumViews: row.minimum_views,
-        },
-        rules: row.rules,
-        status: row.status,
-        totalBudget: row.total_budget,
-        remainingBudget: row.remaining_budget,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-        expiresAt: row.expires_at ? new Date(row.expires_at) : undefined,
-      });
-      onOpenChange(false);
-
-      setPendingCampaign(null); // Ne pas ouvrir la popup de paiement automatiquement
+      /* 2️⃣  Pass the real ID to the payment dialog */
+      setPendingCampaign({ ...campaignData, id: row.id });
+      setShowPaymentDialog(true);
     } catch (err) {
       console.error(err);
       toast.error('Failed to create campaign draft');
@@ -526,7 +502,7 @@ export function CreateCampaignDialog({
 
             <div className="flex gap-3 pt-4">
               <Button type="submit" className="flex-1" disabled={uploading}>
-                Create Campaign
+                Create & Fund Campaign
               </Button>
               <Button
                 type="button"

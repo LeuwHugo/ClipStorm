@@ -104,9 +104,6 @@ function PaymentForm({
         return;
       }
 
-      // Extraire l'ID du PaymentIntent du clientSecret
-      const paymentIntentId = clientSecret.split('_secret_')[0];
-
       // First, submit the form to validate the payment method
       const { error: submitError } = await elements.submit();
       
@@ -149,7 +146,7 @@ function PaymentForm({
                 payment_status: 'paid',
                 total_budget: amount,
                 remaining_budget: amount,
-                stripe_payment_intent_id: paymentIntentId, // Extraire l'ID du PaymentIntent
+                stripe_payment_intent_id: clientSecret.split('_secret_')[0], // Extraire l'ID du PaymentIntent
               })
               .eq('id', campaignId);
 

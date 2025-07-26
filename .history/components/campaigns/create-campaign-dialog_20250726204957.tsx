@@ -63,7 +63,7 @@ type CreateCampaignForm = z.infer<typeof createCampaignSchema>;
 interface CreateCampaignDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateCampaign: (campaign: Campaign) => void;
+  onCreateCampaign: (campaign: Omit<Campaign, 'id' | 'createdAt' | 'updatedAt'>) => void;
 }
 
 export function CreateCampaignDialog({
@@ -203,28 +203,9 @@ export function CreateCampaignDialog({
 
       if (error || !row) throw error;
 
-      // Fermer le formulaire et rafraîchir la liste
-      onCreateCampaign({
-        id: row.id,
-        creatorId: row.creator_id,
-        title: row.title,
-        videoUrl: row.video_url,
-        thumbnail: row.thumbnail,
-        payPerView: {
-          amountPerMillionViews: row.amount_per_million_views,
-          minimumViews: row.minimum_views,
-        },
-        rules: row.rules,
-        status: row.status,
-        totalBudget: row.total_budget,
-        remainingBudget: row.remaining_budget,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-        expiresAt: row.expires_at ? new Date(row.expires_at) : undefined,
-      });
-      onOpenChange(false);
-
-      setPendingCampaign(null); // Ne pas ouvrir la popup de paiement automatiquement
+      /* 2️⃣  Pass the real ID to the payment dialog */
+      setPendingCampaign({ ...campaignData, id: row.id });
+      setShowPaymentDialog(true);
     } catch (err) {
       console.error(err);
       toast.error('Failed to create campaign draft');
@@ -526,7 +507,7 @@ export function CreateCampaignDialog({
 
             <div className="flex gap-3 pt-4">
               <Button type="submit" className="flex-1" disabled={uploading}>
-                Create Campaign
+                Create & Fund Campaign
               </Button>
               <Button
                 type="button"
