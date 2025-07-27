@@ -78,7 +78,7 @@ export function TestimonialsSection() {
                   </div>
 
                   <p className="text-muted-foreground mb-6 leading-relaxed">
-                    "{testimonial.content}"
+                    &quot;{testimonial.content}&quot;
                   </p>
 
                   <div className="flex items-center justify-between">
