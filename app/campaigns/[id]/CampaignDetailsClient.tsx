@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SubmitClipDialog } from '@/components/campaigns/submit-clip-dialog';
 import { PayoutClipperDialog } from '@/components/campaigns/payout-clipper-dialog';
+import { ClipSubmissionCard } from '@/components/campaigns/clip-submission-card';
 import { Campaign, ClipSubmission } from '@/lib/types';
 
 export default function CampaignDetailsClient() {
@@ -122,6 +123,12 @@ export default function CampaignDetailsClient() {
             clipUrl: sub.clip_url,
             platform: sub.platform as 'tiktok' | 'instagram' | 'youtube' | 'twitter',
             viewCount: sub.view_count,
+            likeCount: sub.like_count || undefined,
+            commentCount: sub.comment_count || undefined,
+            hashtags: sub.hashtags || undefined,
+            thumbnail: sub.thumbnail || undefined,
+            title: sub.title || undefined,
+            author: sub.author || undefined,
             submittedAt: new Date(sub.submitted_at),
             status: sub.status as 'pending' | 'approved' | 'rejected' | 'paid',
             paymentAmount: sub.payment_amount,
@@ -424,41 +431,10 @@ export default function CampaignDetailsClient() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <Badge className={getStatusColor(submission.status)}>
-                          {submission.status}
-                        </Badge>
-                        <span className="text-2xl">{getPlatformIcon(submission.platform)}</span>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Views</span>
-                          <span className="font-medium">{submission.viewCount.toLocaleString()}</span>
-                        </div>
-                        {submission.paymentAmount && (
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Payment</span>
-                            <span className="font-medium text-green-600">${submission.paymentAmount}</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Submitted</span>
-                          <span className="text-sm">{submission.submittedAt.toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full mt-3"
-                        onClick={() => window.open(submission.clipUrl, '_blank')}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        View Clip
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <ClipSubmissionCard
+                    submission={submission}
+                    showActions={false}
+                  />
                 </motion.div>
               ))}
             </div>
@@ -528,48 +504,15 @@ export default function CampaignDetailsClient() {
           <TabsContent value="approved" className="mt-6">
             <div className="space-y-4">
               {approvedSubmissions.map((submission) => (
-                <Card key={submission.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <span className="text-2xl">{getPlatformIcon(submission.platform)}</span>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span className="font-medium">Approved</span>
-                            <span className="text-sm text-muted-foreground">
-                              {submission.verifiedAt?.toLocaleDateString()}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm">
-                            <span>{submission.viewCount.toLocaleString()} views</span>
-                            <span className="text-green-600 font-medium">
-                              ${submission.paymentAmount}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        onClick={() => window.open(submission.clipUrl, '_blank')}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        View Clip
-                      </Button>
-                      {submission.status === 'approved' && submission.paymentAmount && (
-                        <Button
-                          onClick={() => {
-                            setSelectedSubmission(submission);
-                            setShowPayoutDialog(true);
-                          }}
-                          size="sm"
-                        >
-                          Pay ${submission.paymentAmount}
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                <ClipSubmissionCard
+                  key={submission.id}
+                  submission={submission}
+                  showActions={true}
+                  onPayout={() => {
+                    setSelectedSubmission(submission);
+                    setShowPayoutDialog(true);
+                  }}
+                />
               ))}
             </div>
           </TabsContent>

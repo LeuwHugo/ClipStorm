@@ -220,6 +220,12 @@ export interface Database {
           clip_url: string
           platform: 'tiktok' | 'instagram' | 'youtube' | 'twitter'
           view_count: number
+          like_count: number | null
+          comment_count: number | null
+          hashtags: string[] | null
+          thumbnail: string | null
+          title: string | null
+          author: string | null
           submitted_at: string
           status: 'pending' | 'approved' | 'rejected' | 'paid'
           payment_amount: number | null
@@ -233,6 +239,12 @@ export interface Database {
           clip_url: string
           platform: 'tiktok' | 'instagram' | 'youtube' | 'twitter'
           view_count: number
+          like_count?: number | null
+          comment_count?: number | null
+          hashtags?: string[] | null
+          thumbnail?: string | null
+          title?: string | null
+          author?: string | null
           submitted_at?: string
           status?: 'pending' | 'approved' | 'rejected' | 'paid'
           payment_amount?: number | null
@@ -246,6 +258,12 @@ export interface Database {
           clip_url?: string
           platform?: 'tiktok' | 'instagram' | 'youtube' | 'twitter'
           view_count?: number
+          like_count?: number | null
+          comment_count?: number | null
+          hashtags?: string[] | null
+          thumbnail?: string | null
+          title?: string | null
+          author?: string | null
           submitted_at?: string
           status?: 'pending' | 'approved' | 'rejected' | 'paid'
           payment_amount?: number | null

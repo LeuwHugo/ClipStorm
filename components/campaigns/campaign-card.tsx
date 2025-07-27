@@ -62,12 +62,12 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
   const isOwner = user?.id === campaign.creatorId;
   const canManage = isCreator && isOwner;
   const canSubmit = isClipper && campaign.status === 'active';
-  // Bouton pause/activate uniquement pour active/paused
   const canToggleStatus = canManage && (campaign.status === 'active' || campaign.status === 'paused');
 
   const handleCreatorClick = () => {
     router.push(`/profile/${campaign.creatorId}`);
   };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -112,10 +112,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
     
     setLoading(true);
     try {
-      // Supprimer l'image du bucket si présente
       if (campaign.thumbnail) {
-        // Extraire le nom du bucket et le chemin de l'image
-        // Supposons que le thumbnail est du type 'https://.../storage/v1/object/public/<bucket>/<path>'
         const match = campaign.thumbnail.match(/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
         if (match) {
           const bucket = match[1];
@@ -136,7 +133,6 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
 
       onDelete(campaign.id);
       toast.success('Campaign deleted successfully!');
-      // Si le freeze persiste, forcer le reload de la page
       if (typeof window !== 'undefined') {
         window.location.reload();
       }
@@ -156,17 +152,18 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
 
   return (
     <>
-      <Card className="group hover:shadow-lg transition-all duration-200 h-[600px] flex flex-col">
+      <Card className="group hover:shadow-lg transition-all duration-200 flex flex-col min-h-[580px] max-h-[650px]">
+        {/* Header Section */}
         <CardHeader className="pb-3 flex-shrink-0">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
-                <CardTitle className="text-lg line-clamp-1">{campaign.title}</CardTitle>
-                <Badge className={getStatusColor(campaign.status)}>
+                <CardTitle className="text-lg line-clamp-1 flex-1">{campaign.title}</CardTitle>
+                <Badge className={`${getStatusColor(campaign.status)} flex-shrink-0`}>
                   {campaign.status}
                 </Badge>
               </div>
-              <CardDescription className="line-clamp-2">
+              <CardDescription className="line-clamp-2 text-sm">
                 ${campaign.payPerView.amountPerMillionViews}/1M views • Min {campaign.payPerView.minimumViews.toLocaleString()} views
               </CardDescription>
               
@@ -176,13 +173,13 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
                   className="flex items-center gap-2 mt-3 cursor-pointer hover:bg-muted/50 rounded-lg p-2 -m-2 transition-colors"
                   onClick={handleCreatorClick}
                 >
-                  <Avatar className="h-6 w-6">
+                  <Avatar className="h-6 w-6 flex-shrink-0">
                     <AvatarImage src={creatorInfo.avatar} alt={creatorInfo.displayName} />
                     <AvatarFallback className="text-xs">
                       {creatorInfo.displayName.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <span className="text-sm text-muted-foreground hover:text-foreground transition-colors truncate">
                     by {creatorInfo.displayName}
                   </span>
                 </div>
@@ -193,7 +190,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
             {canManage && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" disabled={loading}>
+                  <Button variant="ghost" size="sm" disabled={loading} className="flex-shrink-0">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -203,7 +200,6 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
                     Edit Campaign
                   </DropdownMenuItem>
                   
-                  {/* Pause/Activate uniquement pour active/paused */}
                   {canToggleStatus && (
                   <DropdownMenuItem onClick={handleStatusToggle} disabled={loading}>
                     {campaign.status === 'active' ? (
@@ -236,7 +232,9 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4 flex-1 flex flex-col">
+        {/* Content Section */}
+        <CardContent className="flex-1 flex flex-col space-y-4 pb-4">
+          {/* Thumbnail */}
           <div className="relative aspect-video rounded-lg overflow-hidden flex-shrink-0">
             <img
               src={campaign.thumbnail}
@@ -255,6 +253,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
             </div>
           </div>
 
+          {/* Budget Section */}
           <div className="space-y-3 flex-shrink-0">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Budget Used</span>
@@ -276,61 +275,68 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-2 flex-shrink-0">
+          {/* Stats Section */}
+          <div className="grid grid-cols-2 gap-4 flex-shrink-0">
             <div className="flex items-center gap-2 text-sm">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <span>{submissionStats?.totalSubmissions || 0} submissions</span>
+              <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="truncate">{submissionStats?.totalSubmissions || 0} submissions</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <Eye className="h-4 w-4 text-muted-foreground" />
-              <span>{(submissionStats?.totalViews || 0).toLocaleString()} views</span>
+              <Eye className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="truncate">{(submissionStats?.totalViews || 0).toLocaleString()} views</span>
             </div>
           </div>
 
+          {/* Expiration Date */}
           {campaign.expiresAt && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground flex-shrink-0">
-              <Calendar className="h-4 w-4" />
-              <span>Expires {campaign.expiresAt.toLocaleDateString()}</span>
+              <Calendar className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">Expires {campaign.expiresAt.toLocaleDateString()}</span>
             </div>
           )}
 
-          {/* Spacer pour pousser les boutons vers le bas */}
-          <div className="flex-1"></div>
+          {/* Spacer to push buttons to bottom */}
+          <div className="flex-1 min-h-[20px]"></div>
 
-          {/* Action Buttons - toujours en bas */}
+          {/* Action Buttons - Always at bottom */}
           <div className="flex gap-2 flex-shrink-0">
             <Button 
-              className="flex-1" 
+              className="flex-1 min-w-0" 
               onClick={() => router.push(`/campaigns/${campaign.id}`)}
             >
-              View Campaign
+              <span className="truncate">View Campaign</span>
             </Button>
+            
+            {/* Conditional buttons */}
             {canToggleStatus && (
               <Button
                 variant="outline"
                 onClick={handleStatusToggle}
                 disabled={loading}
+                className="flex-shrink-0"
               >
-                {campaign.status === 'active' ? 'Pause' : 'Activate'}
+                <span className="truncate">{campaign.status === 'active' ? 'Pause' : 'Activate'}</span>
               </Button>
             )}
-            {/* Submit Clip Button for Clippers */}
+            
             {canSubmit && (
               <Button 
                 variant="outline"
                 onClick={() => setShowSubmitDialog(true)}
+                className="flex-shrink-0"
               >
-                <Upload className="h-4 w-4 mr-2" />
-                Submit Clip
+                <Upload className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span className="truncate">Submit Clip</span>
               </Button>
             )}
-            {/* Fund Campaign Button for Creator if draft */}
+            
             {canManage && campaign.status === 'draft' as any && (
               <Button 
                 variant="outline"
                 onClick={() => setShowPaymentDialog(true)}
+                className="flex-shrink-0"
               >
-                💸 Fund Campaign
+                <span className="truncate">💸 Fund</span>
               </Button>
             )}
           </div>

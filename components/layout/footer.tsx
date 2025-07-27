@@ -8,8 +8,7 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">For Creators</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/marketplace" className="hover:text-foreground">Find Editors</Link></li>
-              <li><Link href="/how-it-works" className="hover:text-foreground">How It Works</Link></li>
+              <li><Link href="/create-campaign" className="hover:text-foreground">Create Campaign</Link></li>
               <li><Link href="/pricing" className="hover:text-foreground">Pricing</Link></li>
             </ul>
           </div>
@@ -17,7 +16,7 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">For Editors</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/become-editor" className="hover:text-foreground">Become an Editor</Link></li>
+              <li><Link href="/submit-clips" className="hover:text-foreground">Submit Clips</Link></li>
               <li><Link href="/editor-tools" className="hover:text-foreground">Tools & Resources</Link></li>
               <li><Link href="/payouts" className="hover:text-foreground">Payouts</Link></li>
             </ul>

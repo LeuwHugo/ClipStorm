@@ -127,11 +127,6 @@ export function Navbar() {
                       {t('common.settings')}
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/orders">
-                      {t('navigation.orders')}
-                    </Link>
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     {t('common.logout')}
                   </DropdownMenuItem>
