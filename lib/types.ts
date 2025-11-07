@@ -33,95 +33,31 @@ export const UserSchema = z.object({
 
 export type User = z.infer<typeof UserSchema>;
 
-// Gig types
-export const GigSchema = z.object({
-  id: z.string(),
-  clipperId: z.string(),
-  title: z.string(),
-  description: z.string(),
-  pricePerThousandViews: z.number(),
-  turnaroundTime: z.number(),
-  deliverables: z.array(z.string()),
-  examples: z.array(z.string()),
-  active: z.boolean(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
-
-export type Gig = z.infer<typeof GigSchema>;
-
-// Order types
-export const OrderStatusSchema = z.enum([
-  'pending',
-  'accepted',
-  'in_progress',
-  'delivered',
-  'approved',
-  'cancelled'
-]);
-
-export const OrderSchema = z.object({
-  id: z.string(),
-  gigId: z.string(),
-  creatorId: z.string(),
-  clipperId: z.string(),
-  status: OrderStatusSchema,
-  brief: z.string(),
-  assets: z.array(z.string()),
-  deliveredVideos: z.array(z.string()),
-  totalViews: z.number(),
-  amountPaid: z.number(),
-  stripePaymentIntentId: z.string().optional(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
-
-export type Order = z.infer<typeof OrderSchema>;
-
-// Metrics types
-export const MetricSchema = z.object({
-  id: z.string(),
-  orderId: z.string(),
-  videoUrl: z.string(),
-  platform: z.enum(['youtube', 'tiktok', 'instagram']),
-  viewCount: z.number(),
-  lastChecked: z.date(),
-  createdAt: z.date(),
-});
-
-export type Metric = z.infer<typeof MetricSchema>;
-
-// Review types
-export const ReviewSchema = z.object({
-  id: z.string(),
-  orderId: z.string(),
-  reviewerId: z.string(),
-  reviewedUserId: z.string(),
-  rating: z.number().min(1).max(5),
-  comment: z.string().optional(),
-  createdAt: z.date(),
-});
-
-export type Review = z.infer<typeof ReviewSchema>;
-
 // Campaign types
+export const CampaignStatusSchema = z.enum(['active', 'paused', 'completed']);
+export type CampaignStatus = z.infer<typeof CampaignStatusSchema>;
+
 export const CampaignSchema = z.object({
   id: z.string(),
   creatorId: z.string(),
   title: z.string(),
   videoUrl: z.string().url(),
   thumbnail: z.string().url(),
-  payPerView: z.object({
-    amountPerMillionViews: z.number(),
-    minimumViews: z.number(),
-  }),
+  amountPerMillionViews: z.number(),
+  minimumViews: z.number(),
   rules: z.array(z.string()),
-  status: z.enum(['active', 'paused', 'completed']),
+  status: CampaignStatusSchema,
   totalBudget: z.number().optional(),
   remainingBudget: z.number().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
   expiresAt: z.date().optional(),
+  // MVP additions
+  trackingCode: z.string().optional(),
+  durationDays: z.number().optional(),
+  cpmvRate: z.number().optional(),
+  youtubeVideoId: z.string().optional(),
+  youtubeValidationStatus: z.enum(['pending', 'valid', 'invalid']).optional(),
   creatorInfo: z.object({
     displayName: z.string(),
     avatar: z.string().optional(),
@@ -131,6 +67,9 @@ export const CampaignSchema = z.object({
 export type Campaign = z.infer<typeof CampaignSchema>;
 
 // Clip submission types
+export const SubmissionStatusSchema = z.enum(['pending', 'approved', 'rejected', 'paid']);
+export type SubmissionStatus = z.infer<typeof SubmissionStatusSchema>;
+
 export const ClipSubmissionSchema = z.object({
   id: z.string(),
   campaignId: z.string(),
@@ -138,17 +77,13 @@ export const ClipSubmissionSchema = z.object({
   clipUrl: z.string().url(),
   platform: z.enum(['tiktok', 'instagram', 'youtube', 'twitter']),
   viewCount: z.number(),
-  likeCount: z.number().optional(),
-  commentCount: z.number().optional(),
-  hashtags: z.array(z.string()).optional(),
-  thumbnail: z.string().optional(),
-  title: z.string().optional(),
-  author: z.string().optional(),
   submittedAt: z.date(),
-  status: z.enum(['pending', 'approved', 'rejected', 'paid']),
+  status: SubmissionStatusSchema,
   paymentAmount: z.number().optional(),
   rejectionReason: z.string().optional(),
   verifiedAt: z.date().optional(),
+  // MVP additions
+  trackingCodeVerified: z.boolean().optional(),
 });
 
 export type ClipSubmission = z.infer<typeof ClipSubmissionSchema>;

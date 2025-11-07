@@ -37,12 +37,12 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 const editCampaignSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
-  videoUrl: z.string().url('Please enter a valid URL'),
-  paymentAmount: z.number().min(1, 'Payment amount must be at least 1'),
+  title: z.string().min(1, 'Le titre est requis').max(100, 'Le titre doit faire moins de 100 caractères'),
+  videoUrl: z.string().url('Veuillez entrer une URL valide'),
+  paymentAmount: z.number().min(1, 'Le montant de paiement doit être d\'au moins 1'),
   paymentMetric: z.enum(['thousand', 'million']),
-  minimumViews: z.number().min(1000, 'Minimum views must be at least 1,000'),
-  totalBudget: z.number().min(1, 'Budget must be at least $1'),
+  minimumViews: z.number().min(1000, 'Le minimum de vues doit être d\'au moins 1 000'),
+  totalBudget: z.number().min(1, 'Le budget doit être d\'au moins 1€'),
   expiresAt: z.string().optional(),
   status: z.enum(['active', 'paused', 'completed']),
 });
@@ -53,7 +53,7 @@ interface EditCampaignDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   campaign: Campaign;
-  onUpdate: (updatedCampaign: Campaign) => void;
+  onUpdate: (campaign: Campaign) => void;
 }
 
 export function EditCampaignDialog({
@@ -121,10 +121,10 @@ export function EditCampaignDialog({
 
       onUpdate(updatedCampaign);
       onOpenChange(false);
-      toast.success('Campaign updated successfully!');
+      toast.success('Campagne mise à jour avec succès !');
     } catch (error) {
       console.error('Error updating campaign:', error);
-      toast.error('Failed to update campaign');
+      toast.error('Échec de la mise à jour de la campagne');
     } finally {
       setLoading(false);
     }
@@ -134,44 +134,43 @@ export function EditCampaignDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Edit className="h-5 w-5" />
-            Edit Campaign
-          </DialogTitle>
+          <DialogTitle className="text-2xl font-bold">Modifier la Campagne</DialogTitle>
           <DialogDescription>
-            Update your campaign details and settings.
+            Mettez à jour les paramètres de votre campagne
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Campaign Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Epic Gaming Moments Compilation" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Titre de la Campagne</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Titre de la campagne" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="videoUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Video URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://youtube.com/watch?v=..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="videoUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL Vidéo Source</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://youtube.com/watch?v=..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField
@@ -179,7 +178,7 @@ export function EditCampaignDialog({
                 name="paymentAmount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Payment Amount ($)</FormLabel>
+                    <FormLabel>Montant de Paiement (€)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -198,16 +197,16 @@ export function EditCampaignDialog({
                 name="paymentMetric"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Per</FormLabel>
+                    <FormLabel>Par</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select metric" />
+                          <SelectValue placeholder="Sélectionner une métrique" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="thousand">Thousand Views</SelectItem>
-                        <SelectItem value="million">Million Views</SelectItem>
+                        <SelectItem value="thousand">Mille Vues</SelectItem>
+                        <SelectItem value="million">Million de Vues</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -220,7 +219,7 @@ export function EditCampaignDialog({
                 name="minimumViews"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Minimum Views</FormLabel>
+                    <FormLabel>Vues Minimum</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -241,7 +240,7 @@ export function EditCampaignDialog({
                 name="totalBudget"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Total Budget ($)</FormLabel>
+                    <FormLabel>Budget Total (€)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -257,22 +256,13 @@ export function EditCampaignDialog({
 
               <FormField
                 control={form.control}
-                name="status"
+                name="expiresAt"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Campaign Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="paused">Paused</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Date d'Expiration (Optionnel)</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -281,37 +271,38 @@ export function EditCampaignDialog({
 
             <FormField
               control={form.control}
-              name="expiresAt"
+              name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Expiration Date (Optional)</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
+                  <FormLabel>Statut de la Campagne</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner un statut" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="paused">En Pause</SelectItem>
+                      <SelectItem value="completed">Terminée</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="flex gap-3 pt-4">
-              <Button type="submit" className="flex-1" disabled={loading}>
-                {loading ? (
-                  'Updating...'
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Update Campaign
-                  </>
-                )}
-              </Button>
+            <div className="flex justify-end gap-4 pt-6">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={loading}
               >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
+                Annuler
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Mise à jour...' : 'Sauvegarder'}
               </Button>
             </div>
           </form>

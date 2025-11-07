@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ClipSubmission } from '@/lib/types';
 import { formatNumber } from '@/lib/platform-metadata';
+import Image from 'next/image';
 
 interface ClipSubmissionCardProps {
   submission: ClipSubmission;
@@ -92,10 +93,12 @@ export function ClipSubmissionCard({
         {/* Thumbnail */}
         {submission.thumbnail && (
           <div className="relative aspect-video rounded-lg overflow-hidden">
-            <img
+            <Image
               src={submission.thumbnail}
               alt={submission.title || 'Clip preview'}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center">
               <Button

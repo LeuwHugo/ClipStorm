@@ -29,14 +29,14 @@ export default function SignupPage() {
 
     try {
       await signUpWithEmail(email, password, displayName, userRole);
-      toast.success('Account created successfully!');
-      toast.info('Please check your email for a confirmation link before logging in. Don\'t forget to check your spam folder!');
+      toast.success('Compte créé avec succès !');
+      toast.info('Veuillez vérifier votre email pour un lien de confirmation avant de vous connecter. N\'oubliez pas de vérifier vos spams !');
       router.push('/onboarding');
     } catch (error) {
       if (error instanceof Error && error.message.includes('Email not confirmed')) {
-        toast.error('Please check your email and click the confirmation link. Don\'t forget to check your spam folder!');
+        toast.error('Veuillez vérifier votre email et cliquer sur le lien de confirmation. N\'oubliez pas de vérifier vos spams !');
       } else {
-        toast.error('Failed to create account. Please try again.');
+        toast.error('Échec de la création du compte. Veuillez réessayer.');
       }
     } finally {
       setLoading(false);
@@ -47,13 +47,13 @@ export default function SignupPage() {
     setLoading(true);
     try {
       await signInWithGoogle();
-      toast.success('Redirecting to Google...');
+      toast.success('Redirection vers Google...');
       // Don't redirect here - OAuth will handle it
     } catch (error) {
       if (error instanceof Error && error.message.includes('provider is not enabled')) {
-        toast.error('Google signup is not configured yet. Please use email signup or contact support.');
+        toast.error('L\'inscription Google n\'est pas encore configurée. Veuillez utiliser l\'inscription par email ou contacter le support.');
       } else {
-        toast.error('Failed to create account with Google.');
+        toast.error('Échec de la création du compte avec Google.');
       }
     } finally {
       setLoading(false);
@@ -64,13 +64,13 @@ export default function SignupPage() {
     setLoading(true);
     try {
       await signInWithTwitch();
-      toast.success('Redirecting to Twitch...');
+      toast.success('Redirection vers Twitch...');
       // Don't redirect here - OAuth will handle it
     } catch (error) {
       if (error instanceof Error && error.message.includes('provider is not enabled')) {
-        toast.error('Twitch signup is not configured yet. Please use email signup or contact support.');
+        toast.error('L\'inscription Twitch n\'est pas encore configurée. Veuillez utiliser l\'inscription par email ou contacter le support.');
       } else {
-        toast.error('Failed to create account with Twitch.');
+        toast.error('Échec de la création du compte avec Twitch.');
       }
     } finally {
       setLoading(false);
@@ -90,9 +90,9 @@ export default function SignupPage() {
             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <Video className="h-6 w-6 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-bold">Join ClipWave</CardTitle>
+            <CardTitle className="text-2xl font-bold">Rejoignez ClipWave</CardTitle>
             <CardDescription>
-              Create your account and start connecting
+              Créez votre compte et commencez à vous connecter
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -100,34 +100,34 @@ export default function SignupPage() {
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="creator" className="flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  Creator
+                  Créateur
                 </TabsTrigger>
                 <TabsTrigger value="clipper" className="flex items-center gap-2">
                   <Scissors className="h-4 w-4" />
-                  Editor
+                  Monteur
                 </TabsTrigger>
               </TabsList>
               
               <TabsContent value="creator" className="space-y-4">
                 <div className="text-center p-4 bg-muted/50 rounded-lg">
-                  <h3 className="font-semibold mb-2">For Content Creators</h3>
+                  <h3 className="font-semibold mb-2">Pour les Créateurs de Contenu</h3>
                   <p className="text-sm text-muted-foreground">
-                    Find skilled video editors to create viral TikToks, Reels, and YouTube Shorts
+                    Trouvez des monteurs vidéo qualifiés pour créer des TikToks, Reels et YouTube Shorts viraux
                   </p>
                 </div>
               </TabsContent>
               
               <TabsContent value="clipper" className="space-y-4">
                 <div className="text-center p-4 bg-muted/50 rounded-lg">
-                  <h3 className="font-semibold mb-2">For Video Editors</h3>
+                  <h3 className="font-semibold mb-2">Pour les Monteurs Vidéo</h3>
                   <p className="text-sm text-muted-foreground">
-                    Showcase your skills and get hired by content creators worldwide
+                    Montrez vos compétences et soyez embauchés par des créateurs de contenu du monde entier
                   </p>
                 </div>
               </TabsContent>
             </Tabs>
 
-            {/* OAuth Providers */}
+            {/* Fournisseurs OAuth */}
             <div className="space-y-3">
               <Button
                 variant="outline"
@@ -153,7 +153,7 @@ export default function SignupPage() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                Continue with Google
+                Continuer avec Google
               </Button>
 
               <Button
@@ -165,7 +165,7 @@ export default function SignupPage() {
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
                 </svg>
-                Continue with Twitch
+                Continuer avec Twitch
               </Button>
             </div>
 
@@ -175,18 +175,18 @@ export default function SignupPage() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with email
+                  Ou continuer avec email
                 </span>
               </div>
             </div>
 
             <form onSubmit={handleEmailSignup} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="displayName">Full Name</Label>
+                <Label htmlFor="displayName">Nom complet</Label>
                 <Input
                   id="displayName"
                   type="text"
-                  placeholder="Enter your full name"
+                  placeholder="Entrez votre nom complet"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   required
@@ -198,7 +198,7 @@ export default function SignupPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Entrez votre email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -206,12 +206,12 @@ export default function SignupPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Mot de passe</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Create a password"
+                    placeholder="Créez un mot de passe"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -233,14 +233,14 @@ export default function SignupPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Creating account...' : 'Create account'}
+                {loading ? 'Création du compte...' : 'Créer le compte'}
               </Button>
             </form>
 
             <div className="text-center text-sm">
-              Already have an account?{' '}
+              Vous avez déjà un compte ?{' '}
               <Link href="/login" className="text-primary hover:underline">
-                Sign in
+                Se connecter
               </Link>
             </div>
           </CardContent>

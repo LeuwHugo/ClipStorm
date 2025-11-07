@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import { User } from '@/lib/types';
@@ -342,11 +343,13 @@ export default function PublicProfileClient() {
                 {campaigns.map((campaign) => (
                   <Card key={campaign.id} className="hover:shadow-lg transition-shadow cursor-pointer">
                     <CardContent className="p-4">
-                      <div className="aspect-video rounded-lg overflow-hidden mb-4">
-                        <img
+                      <div className="aspect-video rounded-lg overflow-hidden mb-4 relative">
+                        <Image
                           src={campaign.thumbnail}
                           alt={campaign.title}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                       </div>
                       <h3 className="font-semibold mb-2 line-clamp-2">{campaign.title}</h3>

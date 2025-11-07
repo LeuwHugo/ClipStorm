@@ -90,6 +90,12 @@ export interface Database {
           created_at: string
           updated_at: string
           expires_at: string | null
+          // MVP additions
+          tracking_code: string | null
+          duration_days: number | null
+          cpmv_rate: number | null
+          youtube_video_id: string | null
+          youtube_validation_status: string | null
         }
         Insert: {
           id?: string
@@ -106,6 +112,12 @@ export interface Database {
           created_at?: string
           updated_at?: string
           expires_at?: string | null
+          // MVP additions
+          tracking_code?: string | null
+          duration_days?: number | null
+          cpmv_rate?: number | null
+          youtube_video_id?: string | null
+          youtube_validation_status?: string | null
         }
         Update: {
           id?: string
@@ -122,6 +134,12 @@ export interface Database {
           created_at?: string
           updated_at?: string
           expires_at?: string | null
+          // MVP additions
+          tracking_code?: string | null
+          duration_days?: number | null
+          cpmv_rate?: number | null
+          youtube_video_id?: string | null
+          youtube_validation_status?: string | null
         }
       }
       gigs: {

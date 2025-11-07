@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { 
   TrendingUp, 
   Clock, 
-  DollarSign, 
+  Euro, 
   Star, 
   Video, 
   Users, 
@@ -28,6 +28,43 @@ import { supabase } from '@/lib/supabase';
 import { Campaign, ClipSubmission } from '@/lib/types';
 import Link from 'next/link';
 
+// Fonction pour transformer les données de la base de données en types TypeScript
+const transformCampaignData = (dbCampaign: any): Campaign => ({
+  id: dbCampaign.id,
+  creatorId: dbCampaign.creator_id,
+  title: dbCampaign.title,
+  videoUrl: dbCampaign.video_url,
+  thumbnail: dbCampaign.thumbnail,
+  amountPerMillionViews: dbCampaign.amount_per_million_views,
+  minimumViews: dbCampaign.minimum_views,
+  rules: dbCampaign.rules || [],
+  status: dbCampaign.status,
+  totalBudget: dbCampaign.total_budget,
+  remainingBudget: dbCampaign.remaining_budget,
+  createdAt: new Date(dbCampaign.created_at),
+  updatedAt: new Date(dbCampaign.updated_at),
+  expiresAt: dbCampaign.expires_at ? new Date(dbCampaign.expires_at) : undefined,
+  trackingCode: dbCampaign.tracking_code,
+  durationDays: dbCampaign.duration_days,
+  cpmvRate: dbCampaign.cpmv_rate,
+  creatorInfo: dbCampaign.creator_info,
+});
+
+const transformSubmissionData = (dbSubmission: any): ClipSubmission => ({
+  id: dbSubmission.id,
+  campaignId: dbSubmission.campaign_id,
+  submitterId: dbSubmission.submitter_id,
+  clipUrl: dbSubmission.clip_url,
+  platform: dbSubmission.platform,
+  viewCount: dbSubmission.view_count,
+  submittedAt: new Date(dbSubmission.submitted_at),
+  status: dbSubmission.status,
+  paymentAmount: dbSubmission.payment_amount,
+  rejectionReason: dbSubmission.rejection_reason,
+  verifiedAt: dbSubmission.verified_at ? new Date(dbSubmission.verified_at) : undefined,
+  trackingCodeVerified: dbSubmission.tracking_code_verified,
+});
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const { isCreator, isClipper } = useUserRole();
@@ -36,7 +73,7 @@ export default function DashboardPage() {
   const [submissions, setSubmissions] = useState<ClipSubmission[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Stats for creators
+  // Stats pour les créateurs
   const [creatorStats, setCreatorStats] = useState({
     totalCampaigns: 0,
     activeCampaigns: 0,
@@ -45,7 +82,7 @@ export default function DashboardPage() {
     pendingReviews: 0,
   });
 
-  // Stats for clippers
+  // Stats pour les clippers
   const [clipperStats, setClipperStats] = useState({
     totalSubmissions: 0,
     approvedSubmissions: 0,
@@ -66,51 +103,57 @@ export default function DashboardPage() {
 
   const fetchCreatorData = async () => {
     if (!user) return;
-    
+
     try {
-      // Fetch campaigns
+      // Récupérer les campagnes
       const { data: campaignsData, error: campaignsError } = await supabase
         .from('campaigns')
         .select('*')
         .eq('creator_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
+        .order('created_at', { ascending: false });
 
       if (campaignsError) throw campaignsError;
 
-      const campaignsList = campaignsData?.map(campaign => ({
-        id: campaign.id,
-        creatorId: campaign.creator_id,
-        title: campaign.title,
-        videoUrl: campaign.video_url,
-        thumbnail: campaign.thumbnail,
-        payPerView: {
-          amountPerMillionViews: campaign.amount_per_million_views,
-          minimumViews: campaign.minimum_views,
-        },
-        rules: campaign.rules,
-        status: campaign.status as 'active' | 'paused' | 'completed',
-        totalBudget: campaign.total_budget,
-        remainingBudget: campaign.remaining_budget,
-        createdAt: new Date(campaign.created_at),
-        updatedAt: new Date(campaign.updated_at),
-        expiresAt: campaign.expires_at ? new Date(campaign.expires_at) : undefined,
-      })) || [];
+      // Transformer les données
+      const transformedCampaigns = (campaignsData || []).map(transformCampaignData);
+      setCampaigns(transformedCampaigns);
 
-      setCampaigns(campaignsList);
+      // Calculer les statistiques
+      const totalCampaigns = transformedCampaigns.length;
+      const activeCampaigns = transformedCampaigns.filter(c => c.status === 'active').length;
+      const totalSpent = transformedCampaigns.reduce((sum, c) => {
+        const spent = (c.totalBudget || 0) - (c.remainingBudget || 0);
+        return sum + spent;
+      }, 0);
 
-      // Calculate stats
-      const stats = {
-        totalCampaigns: campaignsList.length,
-        activeCampaigns: campaignsList.filter(c => c.status === 'active').length,
-        totalSpent: campaignsList.reduce((sum, c) => sum + ((c.totalBudget || 0) - (c.remainingBudget || 0)), 0),
-        totalSubmissions: 0, // Would fetch from submissions table
-        pendingReviews: 0, // Would fetch pending submissions
-      };
+      // Récupérer les soumissions pour les campagnes de ce créateur
+      const campaignIds = transformedCampaigns.map(c => c.id);
+      let totalSubmissions = 0;
+      let pendingReviews = 0;
 
-      setCreatorStats(stats);
+      if (campaignIds.length > 0) {
+        const { data: submissionsData, error: submissionsError } = await supabase
+          .from('clip_submissions')
+          .select('*')
+          .in('campaign_id', campaignIds);
+
+        if (!submissionsError && submissionsData) {
+          const transformedSubmissions = submissionsData.map(transformSubmissionData);
+          totalSubmissions = transformedSubmissions.length;
+          pendingReviews = transformedSubmissions.filter(s => s.status === 'pending').length;
+        }
+      }
+
+      setCreatorStats({
+        totalCampaigns,
+        activeCampaigns,
+        totalSpent,
+        totalSubmissions,
+        pendingReviews,
+      });
+
     } catch (error) {
-      console.error('Error fetching creator data:', error);
+      console.error('Erreur lors de la récupération des données créateur:', error);
     } finally {
       setLoading(false);
     }
@@ -118,90 +161,106 @@ export default function DashboardPage() {
 
   const fetchClipperData = async () => {
     if (!user) return;
-    
+
     try {
-      // Fetch submissions
+      // Récupérer les soumissions
       const { data: submissionsData, error: submissionsError } = await supabase
         .from('clip_submissions')
-        .select(`
-          *,
-          campaigns (
-            title,
-            creator_id
-          )
-        `)
+        .select('*')
         .eq('submitter_id', user.id)
-        .order('submitted_at', { ascending: false })
-        .limit(10);
+        .order('submitted_at', { ascending: false });
 
       if (submissionsError) throw submissionsError;
 
-      const submissionsList = submissionsData?.map(submission => ({
-        id: submission.id,
-        campaignId: submission.campaign_id,
-        submitterId: submission.submitter_id,
-        clipUrl: submission.clip_url,
-        platform: submission.platform as 'tiktok' | 'instagram' | 'youtube' | 'twitter',
-        viewCount: submission.view_count,
-        submittedAt: new Date(submission.submitted_at),
-        status: submission.status as 'pending' | 'approved' | 'rejected' | 'paid',
-        paymentAmount: submission.payment_amount,
-        rejectionReason: submission.rejection_reason,
-        verifiedAt: submission.verified_at ? new Date(submission.verified_at) : undefined,
-      })) || [];
+      // Transformer les données
+      const transformedSubmissions = (submissionsData || []).map(transformSubmissionData);
+      setSubmissions(transformedSubmissions);
 
-      setSubmissions(submissionsList);
+      // Calculer les statistiques
+      const totalSubmissions = transformedSubmissions.length;
+      const approvedSubmissions = transformedSubmissions.filter(s => s.status === 'approved').length;
+      const pendingSubmissions = transformedSubmissions.filter(s => s.status === 'pending').length;
+      const totalEarnings = transformedSubmissions.reduce((sum, s) => sum + (s.paymentAmount || 0), 0);
+      const totalViews = transformedSubmissions.reduce((sum, s) => sum + (s.viewCount || 0), 0);
 
-      // Calculate stats
-      const stats = {
-        totalSubmissions: submissionsList.length,
-        approvedSubmissions: submissionsList.filter(s => s.status === 'approved').length,
-        pendingSubmissions: submissionsList.filter(s => s.status === 'pending').length,
-        totalEarnings: submissionsList.reduce((sum, s) => sum + (s.paymentAmount || 0), 0),
-        totalViews: submissionsList.reduce((sum, s) => sum + s.viewCount, 0),
-      };
+      setClipperStats({
+        totalSubmissions,
+        approvedSubmissions,
+        pendingSubmissions,
+        totalEarnings,
+        totalViews,
+      });
 
-      setClipperStats(stats);
     } catch (error) {
-      console.error('Error fetching clipper data:', error);
+      console.error('Erreur lors de la récupération des données clipper:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-      case 'approved':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'paused':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
-      case 'rejected':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(amount);
+  };
+
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('fr-FR').format(num);
   };
 
   const getPlatformIcon = (platform: string) => {
-    const icons: { [key: string]: string } = {
-      tiktok: '🎵',
-      instagram: '📷',
-      youtube: '📺',
-      twitter: '🐦',
-    };
-    return icons[platform] || '🎬';
+    switch (platform) {
+      case 'tiktok':
+        return '🎵';
+      case 'instagram':
+        return '📷';
+      case 'youtube':
+        return '📺';
+      case 'twitter':
+        return '🐦';
+      default:
+        return '🎬';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      case 'paid':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return 'Approuvé';
+      case 'pending':
+        return 'En attente';
+      case 'rejected':
+        return 'Rejeté';
+      case 'paid':
+        return 'Payé';
+      default:
+        return status;
+    }
   };
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading dashboard...</p>
+            <p className="text-muted-foreground">Chargement...</p>
           </div>
         </div>
       </div>
@@ -215,231 +274,353 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">
-              {isCreator 
-                ? `Welcome back! Manage your campaigns and track performance.`
-                : `Welcome back! Track your submissions and earnings.`
-              }
-            </p>
-          </div>
+        {/* En-tête */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Tableau de bord</h1>
+          <p className="text-muted-foreground">
+            {isCreator 
+              ? 'Gérez vos campagnes et suivez vos performances'
+              : 'Suivez vos soumissions et vos gains'
+            }
+          </p>
+        </div>
+
+        {/* Cartes de statistiques */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {isCreator && (
-            <Link href="/campaigns">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                New Campaign
-              </Button>
-            </Link>
+            <>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Campagnes</CardTitle>
+                  <Video className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatNumber(creatorStats.totalCampaigns)}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {creatorStats.activeCampaigns} actives
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Dépensé</CardTitle>
+                  <Euro className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(creatorStats.totalSpent)}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Sur toutes les campagnes
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Soumissions</CardTitle>
+                  <Upload className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatNumber(creatorStats.totalSubmissions)}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {creatorStats.pendingReviews} en attente
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Performance</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">+12%</div>
+                  <p className="text-xs text-muted-foreground">
+                    Ce mois-ci
+                  </p>
+                </CardContent>
+              </Card>
+            </>
           )}
+
           {isClipper && (
-            <Link href="/campaigns">
-              <Button>
-                <Upload className="h-4 w-4 mr-2" />
-                Browse Campaigns
-              </Button>
-            </Link>
+            <>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Soumissions</CardTitle>
+                  <Upload className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatNumber(clipperStats.totalSubmissions)}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {clipperStats.pendingSubmissions} en attente
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Gains</CardTitle>
+                  <Euro className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(clipperStats.totalEarnings)}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Depuis les clips approuvés
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Vues</CardTitle>
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatNumber(clipperStats.totalViews)}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Sur tous vos clips
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Taux d'Approbation</CardTitle>
+                  <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {clipperStats.totalSubmissions > 0 
+                      ? `${Math.round((clipperStats.approvedSubmissions / clipperStats.totalSubmissions) * 100)}%`
+                      : '0%'
+                    }
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Clips approuvés
+                  </p>
+                </CardContent>
+              </Card>
+            </>
           )}
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
+        {/* Onglets */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="recent">
-              {isCreator ? 'Recent Campaigns' : 'Recent Submissions'}
+              {isCreator ? 'Campagnes récentes' : 'Soumissions récentes'}
             </TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {isCreator && (
-                <>
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
-                      <Video className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{creatorStats.totalCampaigns}</div>
-                      <p className="text-xs text-muted-foreground">
-                        {creatorStats.activeCampaigns} active
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">${creatorStats.totalSpent.toLocaleString()}</div>
-                      <p className="text-xs text-muted-foreground">
-                        Across all campaigns
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Pending Reviews</CardTitle>
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{creatorStats.pendingReviews}</div>
-                      <p className="text-xs text-muted-foreground">
-                        Submissions awaiting review
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">85%</div>
-                      <p className="text-xs text-muted-foreground">
-                        Campaign success rate
-                      </p>
-                    </CardContent>
-                  </Card>
-                </>
-              )}
-
-              {isClipper && (
-                <>
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Submissions</CardTitle>
-                      <Upload className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{clipperStats.totalSubmissions}</div>
-                      <p className="text-xs text-muted-foreground">
-                        {clipperStats.pendingSubmissions} pending
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">${clipperStats.totalEarnings.toFixed(2)}</div>
-                      <p className="text-xs text-muted-foreground">
-                        From approved clips
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Approval Rate</CardTitle>
-                      <CheckCircle className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">
-                        {Math.round((clipperStats.approvedSubmissions / Math.max(clipperStats.totalSubmissions, 1)) * 100)}%
+            {isCreator && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Campagnes Actives</CardTitle>
+                    <CardDescription>
+                      Vos campagnes en cours
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {campaigns.filter(c => c.status === 'active').length > 0 ? (
+                      <div className="space-y-4">
+                        {campaigns
+                          .filter(c => c.status === 'active')
+                          .slice(0, 3)
+                          .map((campaign) => (
+                            <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg">
+                              <div>
+                                <h3 className="font-semibold">{campaign.title}</h3>
+                                <p className="text-sm text-muted-foreground">
+                                  Budget: {formatCurrency(campaign.totalBudget || 0)}
+                                </p>
+                              </div>
+                              <Button size="sm" variant="outline" asChild>
+                                <Link href={`/campaigns/${campaign.id}`}>
+                                  Voir
+                                </Link>
+                              </Button>
+                            </div>
+                          ))}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {clipperStats.approvedSubmissions} approved clips
-                      </p>
-                    </CardContent>
-                  </Card>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Video className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <p className="text-muted-foreground mb-4">Aucune campagne active</p>
+                        <Button asChild>
+                          <Link href="/create-campaign">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Créer une campagne
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{clipperStats.totalViews.toLocaleString()}</div>
-                      <p className="text-xs text-muted-foreground">
-                        Across all clips
-                      </p>
-                    </CardContent>
-                  </Card>
-                </>
-              )}
-            </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Soumissions Récentes</CardTitle>
+                    <CardDescription>
+                      Dernières soumissions pour vos campagnes
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {submissions.length > 0 ? (
+                        submissions.slice(0, 3).map((submission) => (
+                          <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex items-center gap-4">
+                              <div className="text-2xl">{getPlatformIcon(submission.platform)}</div>
+                              <div>
+                                <h3 className="font-semibold">
+                                  {submission.platform.charAt(0).toUpperCase() + submission.platform.slice(1)} Clip
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {formatNumber(submission.viewCount)} vues • {submission.submittedAt.toLocaleDateString('fr-FR')}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <Badge className={getStatusColor(submission.status)}>
+                                {getStatusText(submission.status)}
+                              </Badge>
+                              {submission.paymentAmount && (
+                                <span className="font-semibold text-green-600">
+                                  {formatCurrency(submission.paymentAmount)}
+                                </span>
+                              )}
+                              <Button size="sm" variant="outline" onClick={() => window.open(submission.clipUrl, '_blank')}>
+                                <Play className="h-4 w-4 mr-2" />
+                                Voir
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <p className="text-muted-foreground">Aucune soumission récente</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>
-                  {isCreator 
-                    ? "Manage your campaigns and track performance"
-                    : "Find new opportunities and track your progress"
-                  }
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {isCreator && (
-                    <>
-                      <Link href="/campaigns">
-                        <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
-                          <Plus className="h-6 w-6" />
-                          <span>Create Campaign</span>
-                        </Button>
-                      </Link>
-                      <Link href="/campaigns">
-                        <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
-                          <Eye className="h-6 w-6" />
-                          <span>View Campaigns</span>
-                        </Button>
-                      </Link>
-                      <Link href="/profile">
-                        <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
-                          <Users className="h-6 w-6" />
-                          <span>Edit Profile</span>
-                        </Button>
-                      </Link>
-                    </>
-                  )}
-                  
-                  {isClipper && (
-                    <>
-                      <Link href="/campaigns">
-                        <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
-                          <Upload className="h-6 w-6" />
-                          <span>Submit Clip</span>
-                        </Button>
-                      </Link>
-                      <Link href="/campaigns">
-                        <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
-                          <Video className="h-6 w-6" />
-                          <span>Browse Campaigns</span>
-                        </Button>
-                      </Link>
-                      <Link href="/profile">
-                        <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
-                          <Star className="h-6 w-6" />
-                          <span>Update Portfolio</span>
-                        </Button>
-                      </Link>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            {isClipper && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Soumissions Récentes</CardTitle>
+                    <CardDescription>
+                      Vos dernières soumissions de clips
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {submissions.length > 0 ? (
+                        submissions.slice(0, 3).map((submission) => (
+                          <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex items-center gap-4">
+                              <div className="text-2xl">{getPlatformIcon(submission.platform)}</div>
+                              <div>
+                                <h3 className="font-semibold">
+                                  {submission.platform.charAt(0).toUpperCase() + submission.platform.slice(1)} Clip
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {formatNumber(submission.viewCount)} vues • {submission.submittedAt.toLocaleDateString('fr-FR')}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <Badge className={getStatusColor(submission.status)}>
+                                {getStatusText(submission.status)}
+                              </Badge>
+                              {submission.paymentAmount && (
+                                <span className="font-semibold text-green-600">
+                                  {formatCurrency(submission.paymentAmount)}
+                                </span>
+                              )}
+                              <Button size="sm" variant="outline" onClick={() => window.open(submission.clipUrl, '_blank')}>
+                                <Play className="h-4 w-4 mr-2" />
+                                Voir
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <p className="text-muted-foreground mb-4">Aucune soumission récente</p>
+                          <Button asChild>
+                            <Link href="/submit-clips">
+                              <Plus className="h-4 w-4 mr-2" />
+                              Soumettre un clip
+                            </Link>
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Gains du Mois</CardTitle>
+                    <CardDescription>
+                      Vos revenus ce mois-ci
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <div>
+                          <h4 className="font-semibold">Gains Totaux</h4>
+                          <p className="text-sm text-muted-foreground">Ce mois-ci</p>
+                        </div>
+                        <span className="text-2xl font-bold text-green-600">
+                          {formatCurrency(clipperStats.totalEarnings)}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div>
+                          <h4 className="font-semibold">Clips Approuvés</h4>
+                          <p className="text-sm text-muted-foreground">Ce mois-ci</p>
+                        </div>
+                        <span className="text-2xl font-bold text-blue-600">
+                          {clipperStats.approvedSubmissions}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg border-2 border-primary">
+                        <div>
+                          <h4 className="font-semibold">Prochain Paiement</h4>
+                          <p className="text-sm text-muted-foreground">Via Stripe</p>
+                        </div>
+                        <span className="text-2xl font-bold text-primary">
+                          {formatCurrency(clipperStats.totalEarnings)}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="recent" className="space-y-6">
             {isCreator && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent Campaigns</CardTitle>
+                  <CardTitle>Toutes les Campagnes</CardTitle>
                   <CardDescription>
-                    Your latest campaign activity and performance
+                    Historique complet de vos campagnes
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -447,40 +628,31 @@ export default function DashboardPage() {
                     {campaigns.length > 0 ? (
                       campaigns.map((campaign) => (
                         <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                              <Video className="h-6 w-6 text-primary" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold">{campaign.title}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                Created {campaign.createdAt.toLocaleDateString()}
-                              </p>
-                            </div>
+                          <div>
+                            <h3 className="font-semibold">{campaign.title}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              Budget: {formatCurrency(campaign.totalBudget || 0)} • 
+                              Statut: {campaign.status} • 
+                              Créée le {campaign.createdAt.toLocaleDateString('fr-FR')}
+                            </p>
                           </div>
-                          <div className="flex items-center gap-4">
-                            <Badge className={getStatusColor(campaign.status)}>
-                              {campaign.status}
-                            </Badge>
-                            <span className="font-semibold">${campaign.totalBudget?.toLocaleString()}</span>
+                          <Button size="sm" variant="outline" asChild>
                             <Link href={`/campaigns/${campaign.id}`}>
-                              <Button size="sm" variant="outline">
-                                View
-                              </Button>
+                              Voir détails
                             </Link>
-                          </div>
+                          </Button>
                         </div>
                       ))
                     ) : (
                       <div className="text-center py-8">
                         <Video className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <p className="text-muted-foreground">No campaigns yet</p>
-                        <Link href="/campaigns">
-                          <Button className="mt-4">
+                        <p className="text-muted-foreground mb-4">Aucune campagne créée</p>
+                        <Button asChild>
+                          <Link href="/create-campaign">
                             <Plus className="h-4 w-4 mr-2" />
-                            Create Your First Campaign
-                          </Button>
-                        </Link>
+                            Créer votre première campagne
+                          </Link>
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -491,9 +663,9 @@ export default function DashboardPage() {
             {isClipper && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent Submissions</CardTitle>
+                  <CardTitle>Toutes les Soumissions</CardTitle>
                   <CardDescription>
-                    Your latest clip submissions and their status
+                    Historique complet de vos soumissions
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -508,22 +680,22 @@ export default function DashboardPage() {
                                 {submission.platform.charAt(0).toUpperCase() + submission.platform.slice(1)} Clip
                               </h3>
                               <p className="text-sm text-muted-foreground">
-                                {submission.viewCount.toLocaleString()} views • {submission.submittedAt.toLocaleDateString()}
+                                {formatNumber(submission.viewCount)} vues • {submission.submittedAt.toLocaleDateString('fr-FR')}
                               </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
                             <Badge className={getStatusColor(submission.status)}>
-                              {submission.status}
+                              {getStatusText(submission.status)}
                             </Badge>
                             {submission.paymentAmount && (
                               <span className="font-semibold text-green-600">
-                                ${submission.paymentAmount.toFixed(2)}
+                                {formatCurrency(submission.paymentAmount)}
                               </span>
                             )}
                             <Button size="sm" variant="outline" onClick={() => window.open(submission.clipUrl, '_blank')}>
                               <Play className="h-4 w-4 mr-2" />
-                              View
+                              Voir
                             </Button>
                           </div>
                         </div>
@@ -531,46 +703,19 @@ export default function DashboardPage() {
                     ) : (
                       <div className="text-center py-8">
                         <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <p className="text-muted-foreground">No submissions yet</p>
-                        <Link href="/campaigns">
-                          <Button className="mt-4">
-                            <Upload className="h-4 w-4 mr-2" />
-                            Submit Your First Clip
-                          </Button>
-                        </Link>
+                        <p className="text-muted-foreground mb-4">Aucune soumission</p>
+                        <Button asChild>
+                          <Link href="/submit-clips">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Soumettre votre premier clip
+                          </Link>
+                        </Button>
                       </div>
                     )}
                   </div>
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
-
-          <TabsContent value="analytics" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {isCreator ? 'Campaign Analytics' : 'Performance Analytics'}
-                </CardTitle>
-                <CardDescription>
-                  {isCreator 
-                    ? "Detailed insights into your campaign performance and ROI"
-                    : "Track your submission performance and earnings over time"
-                  }
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    {isCreator 
-                      ? "Campaign analytics dashboard coming soon"
-                      : "Performance analytics dashboard coming soon"
-                    }
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </motion.div>

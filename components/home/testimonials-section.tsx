@@ -7,31 +7,31 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const testimonials = [
   {
-    name: 'Sarah Johnson',
-    role: 'Gaming Content Creator',
+    name: 'Alex Martin',
+    role: 'Créateur YouTube',
     avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100',
-    content: 'ClipWave transformed my content strategy. My TikTok went from 10K to 500K followers in 3 months thanks to the amazing editors I found here.',
-    rating: 5,
-    platform: 'TikTok',
-    growth: '+490K followers'
-  },
-  {
-    name: 'Mike Rodriguez',
-    role: 'Lifestyle Influencer',
-    avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100',
-    content: 'The quality of edits is incredible. My Instagram Reels consistently hit 100K+ views now. The editors really understand what makes content viral.',
-    rating: 5,
-    platform: 'Instagram',
-    growth: '+2M total views'
-  },
-  {
-    name: 'Emma Davis',
-    role: 'Tech Reviewer',
-    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100',
-    content: 'Fast turnaround, professional quality, and affordable pricing. ClipWave is a game-changer for content creators who want to scale.',
+    content: 'Le système de tracking est génial ! Je peux voir exactement quels clips génèrent des vues et payer seulement pour les performances réelles.',
     rating: 5,
     platform: 'YouTube',
-    growth: '+50K subscribers'
+    growth: '+25K vues'
+  },
+  {
+    name: 'Léa Dubois',
+    role: 'Clipper TikTok',
+    avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100',
+    content: 'Interface simple et paiements automatiques. Je gagne de l\'argent en créant des clips viraux à partir de contenu YouTube existant.',
+    rating: 5,
+    platform: 'TikTok',
+    growth: '+150€ gains'
+  },
+  {
+    name: 'Thomas Chen',
+    role: 'Influenceur Tech',
+    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100',
+    content: 'MVP parfait pour tester le concept. Création de campagne en 2 minutes, validation automatique des clips, paiements transparents.',
+    rating: 5,
+    platform: 'Multi',
+    growth: '+500€ GMV'
   }
 ];
 
@@ -47,14 +47,14 @@ export function TestimonialsSection() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-            Loved by
+            Testé par nos
             <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-              {" "}10,000+ Creators
+              {" "}Premiers Utilisateurs
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            See how content creators are growing their audiences and 
-            building successful brands with ClipWave.
+            Découvrez comment créateurs et clippers utilisent notre MVP pour 
+            générer du contenu viral et des revenus.
           </p>
         </motion.div>
 

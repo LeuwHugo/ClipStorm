@@ -1,22 +1,21 @@
-# ClipWave - Video Editor Marketplace
+# ClipWave - TikTok Campaign Platform
 
-A modern SaaS marketplace that connects content creators with skilled video editors for short-form content creation (TikTok, Instagram Reels, YouTube Shorts).
+A modern SaaS platform that connects content creators with clippers for viral TikTok campaigns.
 
 ## Features
 
-- 🎬 **Multi-role Authentication**: OAuth for creators, email/Google for editors
-- 🔍 **Advanced Marketplace**: Searchable profiles with portfolio galleries
-- 📋 **Complete Order Workflow**: Brief submission, asset upload, chat, versioning
-- 📊 **Metrics Tracking**: View count polling and performance analytics
-- 💰 **Stripe Integration**: Metered billing and Connect for payouts
-- ⭐ **Reviews & Ratings**: Comprehensive feedback system
-- 🔔 **Notifications**: Email and in-app notifications
-- 🎨 **Modern UI**: Dark/light theme, responsive design, smooth animations
+- 🎬 **Multi-role Authentication**: Email/password with role selection (Creator/Clipper)
+- 📋 **Campaign Creation**: Simple 4-field campaign setup with TikTok URL validation
+- 📤 **Clip Submissions**: Easy TikTok clip submission with tracking code validation
+- 📊 **Auto Tracking**: Automated view counting and payment calculations
+- 💰 **Stripe Integration**: Direct payments and Connect for clipper payouts
+- 🔔 **Email Notifications**: Critical notifications for campaign events
+- 🎨 **Modern UI**: Dark/light theme, responsive design, mobile-first
 
 ## Tech Stack
 
 ### Frontend
-- **Next.js 14** with App Router
+- **Next.js 13** with App Router
 - **TypeScript** for type safety
 - **Tailwind CSS** for styling
 - **shadcn/ui** for components
@@ -24,7 +23,7 @@ A modern SaaS marketplace that connects content creators with skilled video edit
 
 ### Backend
 - **Supabase** (Database, Auth, Storage)
-- **Stripe** for payments and payouts
+- **Stripe** for payments and Connect payouts
 - **Zod** for schema validation
 
 ### Development
@@ -75,14 +74,16 @@ A modern SaaS marketplace that connects content creators with skilled video edit
 ```
 clipwave/
 ├── app/                    # Next.js app directory
-│   ├── (auth)/            # Auth pages (login, signup)
+│   ├── auth/              # Auth pages (login, signup)
 │   ├── dashboard/         # User dashboard
-│   ├── marketplace/       # Marketplace pages
+│   ├── campaigns/         # Campaign management
+│   ├── submit-clips/      # Clip submission
+│   ├── create-campaign/   # Campaign creation
 │   └── api/               # API routes
 ├── components/            # Reusable components
 │   ├── ui/                # shadcn/ui components
 │   ├── layout/            # Layout components
-│   └── marketplace/       # Marketplace components
+│   └── campaigns/         # Campaign components
 ├── lib/                   # Utilities and configurations
 │   ├── supabase.ts        # Supabase config
 │   ├── auth.ts            # Authentication helpers
@@ -112,42 +113,44 @@ clipwave/
   portfolio?: string[];
   languages?: string[];
   turnaroundTime?: number;
-  rating?: number;
-  reviewCount?: number;
   // Stripe
   stripeAccountId?: string;
   stripeCustomerId?: string;
 }
 ```
 
-### Gigs Collection
+### Campaigns Collection
 ```typescript
 {
   id: string;
-  clipperId: string;
+  creatorId: string;
   title: string;
-  description: string;
-  pricePerThousandViews: number;
-  turnaroundTime: number;
-  deliverables: string[];
-  examples: string[];
-  active: boolean;
+  videoUrl: string;
+  thumbnail: string;
+  amountPerMillionViews: number;
+  minimumViews: number;
+  rules: string[];
+  status: 'active' | 'paused' | 'completed';
+  totalBudget: number;
+  remainingBudget: number;
+  trackingCode: string;
+  durationDays: number;
+  cpmvRate: number;
 }
 ```
 
-### Orders Collection
+### Clip Submissions Collection
 ```typescript
 {
   id: string;
-  gigId: string;
-  creatorId: string;
-  clipperId: string;
-  status: 'pending' | 'accepted' | 'in_progress' | 'delivered' | 'approved' | 'cancelled';
-  brief: string;
-  assets: string[];
-  deliveredVideos: string[];
-  totalViews: number;
-  amountPaid: number;
+  campaignId: string;
+  submitterId: string;
+  clipUrl: string;
+  platform: 'tiktok';
+  viewCount: number;
+  status: 'pending' | 'approved' | 'rejected' | 'paid';
+  paymentAmount?: number;
+  trackingCodeVerified: boolean;
 }
 ```
 
@@ -155,10 +158,11 @@ clipwave/
 
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User authentication
-- `GET /api/marketplace/clippers` - Get clipper profiles
-- `POST /api/orders/create` - Create new order
+- `POST /api/campaigns/create` - Create new campaign
+- `POST /api/clips/submit` - Submit clip for campaign
 - `POST /api/payments/create-intent` - Create payment intent
 - `POST /api/payments/webhook` - Stripe webhook handler
+- `POST /api/payments/create-connect-account` - Stripe Connect setup
 
 ## Deployment
 
@@ -185,7 +189,7 @@ See `supabase/migrations/` for database schema and RLS policies.
 1. Create Stripe account
 2. Enable Stripe Connect
 3. Set up webhooks for payment events
-4. Configure metered billing products
+4. Configure campaign payment products
 
 ### Environment Variables
 ```bash

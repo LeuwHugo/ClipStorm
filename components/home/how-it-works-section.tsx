@@ -7,26 +7,26 @@ import { Card, CardContent } from '@/components/ui/card';
 const steps = [
   {
     icon: Search,
-    title: 'Find Your Editor',
-    description: 'Browse our marketplace of skilled video editors. Filter by style, price, and turnaround time.',
+    title: 'Créez une Campagne',
+    description: 'Créez une campagne YouTube avec titre, URL, budget, durée et CPMV. Code de tracking généré automatiquement.',
     color: 'from-blue-500 to-blue-600'
   },
   {
     icon: MessageCircle,
-    title: 'Share Your Vision',
-    description: 'Upload your raw footage and brief. Communicate directly with your chosen editor.',
+    title: 'Soumettez des Clips',
+    description: 'Les clippers soumettent des clips TikTok avec le code de tracking dans la description.',
     color: 'from-green-500 to-green-600'
   },
   {
     icon: Video,
-    title: 'Get Your Clips',
-    description: 'Receive professionally edited videos optimized for maximum engagement and virality.',
+    title: 'Validation Automatique',
+    description: 'Système vérifie automatiquement les clips et calcule les paiements selon les vues générées.',
     color: 'from-purple-500 to-purple-600'
   },
   {
     icon: Star,
-    title: 'Go Viral',
-    description: 'Post your content and watch the views roll in. Rate your editor and build long-term partnerships.',
+    title: 'Paiements Automatiques',
+    description: 'Paiements Stripe Connect automatiques après 7 jours d\'escrow selon les performances.',
     color: 'from-orange-500 to-orange-600'
   }
 ];
@@ -43,11 +43,11 @@ export function HowItWorksSection() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-            How It Works
+            Comment ça marche
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Get professional video edits in just a few simple steps. 
-            From concept to viral content in record time.
+            Processus simple en 4 étapes pour connecter créateurs et clippers. 
+            Du brief au paiement automatique.
           </p>
         </motion.div>
 

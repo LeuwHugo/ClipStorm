@@ -17,7 +17,8 @@ import {
   Video,
   TrendingUp,
   Eye,
-  DollarSign
+  Euro,
+  CheckCircle
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
 import { useUserRole } from '@/hooks/use-user-role';
-import { useTranslations } from '@/hooks/use-translations';
+import { useMessages } from '@/hooks/use-messages';
 import { AvatarUpload } from '@/components/profile/avatar-upload';
 import { StripeConnectSetup } from '@/components/profile/stripe-connect-setup';
 import { supabase } from '@/lib/supabase';
@@ -54,7 +55,7 @@ interface SubmissionStats {
 export default function ProfilePage() {
   const { user } = useAuth();
   const { isCreator, isClipper } = useUserRole();
-  const { t } = useTranslations();
+  const { t } = useMessages();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentAvatar, setCurrentAvatar] = useState<string>('');
@@ -79,7 +80,7 @@ export default function ProfilePage() {
     displayName: user?.user_metadata?.full_name || user?.email?.split('@')[0] || '',
     bio: '',
     location: '',
-    languages: ['English'],
+    languages: ['Français'],
     turnaroundTime: 24,
     // Creator specific
     platforms: [] as string[],
@@ -102,22 +103,22 @@ export default function ProfilePage() {
 
   const fetchUserProfile = async () => {
     if (!user) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', user.id)
         .single();
-      
+
       if (error) throw error;
-      
+
       if (data) {
         setProfile({
           displayName: data.display_name || '',
           bio: data.bio || '',
-          location: '',
-          languages: data.languages || ['English'],
+          location: data.location || '',
+          languages: data.languages || ['Français'],
           turnaroundTime: data.turnaround_time || 24,
           platforms: data.platforms || [],
           channelName: data.channel_name || '',
@@ -128,34 +129,34 @@ export default function ProfilePage() {
         setStripeAccountId(data.stripe_account_id || '');
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error fetching user profile:', error);
     }
-  };
-
-  const handleAvatarUpdate = (newAvatarUrl: string | null) => {
-    setCurrentAvatar(newAvatarUrl || '');
   };
 
   const fetchCampaignStats = async () => {
     if (!user) return;
-    
+
     try {
       const { data: campaigns, error } = await supabase
         .from('campaigns')
         .select('*')
         .eq('creator_id', user.id);
-      
+
       if (error) throw error;
-      
-      const stats = {
-        totalCampaigns: campaigns?.length || 0,
-        activeCampaigns: campaigns?.filter(c => c.status === 'active').length || 0,
-        totalViews: 0, // Would calculate from submissions
-        totalSpent: campaigns?.reduce((sum, c) => sum + ((c.total_budget || 0) - (c.remaining_budget || 0)), 0) || 0,
-        avgPerformance: 0 // Would calculate based on campaign performance
-      };
-      
-      setCampaignStats(stats);
+
+      const totalCampaigns = campaigns?.length || 0;
+      const activeCampaigns = campaigns?.filter(c => c.status === 'active').length || 0;
+      const totalViews = campaigns?.reduce((sum, c) => sum + (c.total_views || 0), 0) || 0;
+      const totalSpent = campaigns?.reduce((sum, c) => sum + ((c.total_budget || 0) - (c.remaining_budget || 0)), 0) || 0;
+      const avgPerformance = totalCampaigns > 0 ? totalViews / totalCampaigns : 0;
+
+      setCampaignStats({
+        totalCampaigns,
+        activeCampaigns,
+        totalViews,
+        totalSpent,
+        avgPerformance
+      });
     } catch (error) {
       console.error('Error fetching campaign stats:', error);
     }
@@ -163,32 +164,36 @@ export default function ProfilePage() {
 
   const fetchSubmissionStats = async () => {
     if (!user) return;
-    
+
     try {
       const { data: submissions, error } = await supabase
         .from('clip_submissions')
         .select('*')
         .eq('submitter_id', user.id);
-      
+
       if (error) throw error;
-      
-      const stats = {
-        totalSubmissions: submissions?.length || 0,
-        approvedSubmissions: submissions?.filter(s => s.status === 'approved').length || 0,
-        totalEarnings: submissions?.reduce((sum, s) => sum + (s.payment_amount || 0), 0) || 0,
-        avgRating: 4.8, // Would calculate from reviews
-        totalViews: submissions?.reduce((sum, s) => sum + s.view_count, 0) || 0
-      };
-      
-      setSubmissionStats(stats);
+
+      const totalSubmissions = submissions?.length || 0;
+      const approvedSubmissions = submissions?.filter(s => s.status === 'approved').length || 0;
+      const totalEarnings = submissions?.reduce((sum, s) => sum + (s.payment_amount || 0), 0) || 0;
+      const totalViews = submissions?.reduce((sum, s) => sum + (s.view_count || 0), 0) || 0;
+      const avgRating = 0; // No rating system in MVP
+
+      setSubmissionStats({
+        totalSubmissions,
+        approvedSubmissions,
+        totalEarnings,
+        avgRating,
+        totalViews
+      });
     } catch (error) {
       console.error('Error fetching submission stats:', error);
     }
   };
 
-  const handleSaveProfile = async () => {
+  const handleSave = async () => {
     if (!user) return;
-    
+
     setLoading(true);
     try {
       const { error } = await supabase
@@ -196,43 +201,37 @@ export default function ProfilePage() {
         .update({
           display_name: profile.displayName,
           bio: profile.bio,
+          location: profile.location,
           languages: profile.languages,
-          turnaround_time: isClipper ? profile.turnaroundTime : null,
-          platforms: isCreator ? profile.platforms : null,
-          channel_name: isCreator ? profile.channelName : null,
-          subscriber_count: isCreator ? profile.subscriberCount : null,
-          portfolio: isClipper ? profile.portfolio : null,
+          turnaround_time: profile.turnaroundTime,
+          platforms: profile.platforms,
+          channel_name: profile.channelName,
+          subscriber_count: profile.subscriberCount,
+          portfolio: profile.portfolio,
         })
         .eq('id', user.id);
 
       if (error) throw error;
 
-      toast.success(t('profile.profileUpdated'));
+      toast.success('Profil mis à jour avec succès !');
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error(t('profile.failedToUpdate'));
+      toast.error('Erreur lors de la mise à jour du profil');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLanguageToggle = (language: string) => {
-    setProfile(prev => ({
-      ...prev,
-      languages: prev.languages.includes(language)
-        ? prev.languages.filter(l => l !== language)
-        : [...prev.languages, language]
-    }));
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(amount);
   };
 
-  const handlePlatformToggle = (platform: string) => {
-    setProfile(prev => ({
-      ...prev,
-      platforms: prev.platforms.includes(platform)
-        ? prev.platforms.filter(p => p !== platform)
-        : [...prev.platforms, platform]
-    }));
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('fr-FR').format(num);
   };
 
   if (!user) {
@@ -253,286 +252,187 @@ export default function ProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-6">
-            <AvatarUpload
-              currentAvatar={currentAvatar || user?.user_metadata?.avatar_url}
-              displayName={profile.displayName}
-              onAvatarUpdate={handleAvatarUpdate}
-            />
-            <div>
-              <h1 className="text-3xl font-bold">{profile.displayName}</h1>
-              <p className="text-muted-foreground">
-                {isCreator ? 'Content Creator' : 'Video Editor & Clipper'}
-              </p>
-              <div className="flex items-center gap-4 mt-2">
-                {isClipper && (
-                  <>
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{submissionStats.avgRating}</span>
-                      <span className="text-sm text-muted-foreground">rating</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{profile.turnaroundTime}h delivery</span>
-                    </div>
-                  </>
-                )}
-                {isCreator && (
-                  <div className="flex items-center gap-1">
-                    <Video className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{campaignStats.totalCampaigns} campaigns</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          <Button
-            onClick={() => isEditing ? handleSaveProfile() : setIsEditing(true)}
-            disabled={loading}
-            className="min-w-[120px]"
-          >
-            {loading ? (
-              t('common.loading')
-            ) : isEditing ? (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                {t('profile.saveChanges')}
-              </>
-            ) : (
-              <>
-                <Edit3 className="h-4 w-4 mr-2" />
-                {t('profile.editProfile')}
-              </>
-            )}
-          </Button>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {isCreator && (
-            <>
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-primary">{campaignStats.totalCampaigns}</div>
-                  <div className="text-sm text-muted-foreground">Total Campaigns</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-green-600">{campaignStats.activeCampaigns}</div>
-                  <div className="text-sm text-muted-foreground">Active Campaigns</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-blue-600">${campaignStats.totalSpent.toLocaleString()}</div>
-                  <div className="text-sm text-muted-foreground">Total Spent</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-purple-600">{campaignStats.totalViews.toLocaleString()}</div>
-                  <div className="text-sm text-muted-foreground">Total Views</div>
-                </CardContent>
-              </Card>
-            </>
-          )}
-          
-          {isClipper && (
-            <>
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-primary">{submissionStats.totalSubmissions}</div>
-                  <div className="text-sm text-muted-foreground">Total Submissions</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-green-600">{submissionStats.approvedSubmissions}</div>
-                  <div className="text-sm text-muted-foreground">Approved Clips</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-blue-600">${submissionStats.totalEarnings.toFixed(2)}</div>
-                  <div className="text-sm text-muted-foreground">Total Earnings</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-purple-600">{submissionStats.totalViews.toLocaleString()}</div>
-                  <div className="text-sm text-muted-foreground">Total Views</div>
-                </CardContent>
-              </Card>
-            </>
-          )}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">{t('profile.title')}</h1>
+          <p className="text-muted-foreground">
+            Gérez votre profil et vos préférences
+          </p>
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="profile">Profile Info</TabsTrigger>
-            <TabsTrigger value="campaign-focus">
-              {isCreator ? 'Campaign Strategy' : 'Submission History'}
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="profile">Profil</TabsTrigger>
+            <TabsTrigger value="stats">Statistiques</TabsTrigger>
+            <TabsTrigger value="campaign-focus">Campagnes</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
           <TabsContent value="profile" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Informations personnelles
+                </CardTitle>
                 <CardDescription>
-                  {isCreator 
-                    ? "Manage your creator profile to attract the best video editors"
-                    : "Showcase your skills to attract campaign creators"
-                  }
+                  Gérez vos informations de base
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {isEditing ? (
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="displayName">Display Name</Label>
-                        <Input
-                          id="displayName"
-                          value={profile.displayName}
-                          onChange={(e) => setProfile(prev => ({ ...prev, displayName: e.target.value }))}
-                        />
-                      </div>
-                      {isClipper && (
-                        <div>
-                          <Label htmlFor="turnaround">Turnaround Time (hours)</Label>
-                          <Input
-                            id="turnaround"
-                            type="number"
-                            value={profile.turnaroundTime}
-                            onChange={(e) => setProfile(prev => ({ ...prev, turnaroundTime: parseInt(e.target.value) }))}
-                          />
-                        </div>
-                      )}
-                    </div>
-
+                <div className="flex items-start gap-4">
+                  <AvatarUpload
+                    currentAvatar={currentAvatar}
+                    onAvatarChange={setCurrentAvatar}
+                  />
+                  
+                  <div className="flex-1 space-y-4">
                     <div>
-                      <Label htmlFor="bio">Bio</Label>
-                      <Textarea
-                        id="bio"
-                        placeholder={isCreator 
-                          ? "Describe your content style and what you're looking for in video editors..."
-                          : "Describe your editing experience, style, and specialties..."
-                        }
-                        value={profile.bio}
-                        onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
-                        rows={4}
+                      <Label htmlFor="displayName">Nom d'affichage</Label>
+                      <Input
+                        id="displayName"
+                        value={profile.displayName}
+                        onChange={(e) => setProfile(prev => ({ ...prev, displayName: e.target.value }))}
+                        disabled={!isEditing}
                       />
                     </div>
 
                     <div>
-                      <Label>Languages</Label>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {['English', 'Spanish', 'French', 'German', 'Portuguese', 'Japanese'].map((language) => (
-                          <Badge
-                            key={language}
-                            variant={profile.languages.includes(language) ? 'default' : 'outline'}
-                            className="cursor-pointer"
-                            onClick={() => handleLanguageToggle(language)}
-                          >
-                            {language}
-                          </Badge>
-                        ))}
-                      </div>
+                      <Label htmlFor="bio">Biographie</Label>
+                      <Textarea
+                        id="bio"
+                        value={profile.bio}
+                        onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
+                        disabled={!isEditing}
+                        placeholder="Parlez-nous de vous..."
+                        maxLength={500}
+                      />
                     </div>
 
-                    {isCreator && (
-                      <>
-                        <div>
-                          <Label>Platforms</Label>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {['YouTube', 'TikTok', 'Instagram', 'Twitch', 'Twitter'].map((platform) => (
-                              <Badge
-                                key={platform}
-                                variant={profile.platforms.includes(platform) ? 'default' : 'outline'}
-                                className="cursor-pointer"
-                                onClick={() => handlePlatformToggle(platform)}
-                              >
-                                {platform}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="channelName">Channel Name</Label>
-                            <Input
-                              id="channelName"
-                              value={profile.channelName}
-                              onChange={(e) => setProfile(prev => ({ ...prev, channelName: e.target.value }))}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="subscriberCount">Subscriber Count</Label>
-                            <Input
-                              id="subscriberCount"
-                              type="number"
-                              value={profile.subscriberCount}
-                              onChange={(e) => setProfile(prev => ({ ...prev, subscriberCount: parseInt(e.target.value) || 0 }))}
-                            />
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <>
                     <div>
-                      <h3 className="font-semibold mb-2">About</h3>
-                      <p className="text-muted-foreground">
-                        {profile.bio || (isCreator 
-                          ? 'Content creator looking for skilled video editors to create viral clips.'
-                          : 'Professional video editor specializing in short-form content creation.'
-                        )}
-                      </p>
+                      <Label htmlFor="location">Localisation</Label>
+                      <Input
+                        id="location"
+                        value={profile.location}
+                        onChange={(e) => setProfile(prev => ({ ...prev, location: e.target.value }))}
+                        disabled={!isEditing}
+                        placeholder="Ville, Pays"
+                      />
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <h4 className="font-medium mb-1">Languages</h4>
-                        <div className="flex flex-wrap gap-1">
-                          {profile.languages.map((lang) => (
-                            <Badge key={lang} variant="secondary" className="text-xs">{lang}</Badge>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      {isCreator && (
-                        <div>
-                          <h4 className="font-medium mb-1">Platforms</h4>
-                          <div className="flex flex-wrap gap-1">
-                            {profile.platforms.map((platform) => (
-                              <Badge key={platform} variant="secondary" className="text-xs">{platform}</Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {isClipper && (
-                        <div>
-                          <h4 className="font-medium mb-1">Delivery Time</h4>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Clock className="h-4 w-4" />
-                            <span>{profile.turnaroundTime} hours</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  {isEditing ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsEditing(false)}
+                        disabled={loading}
+                      >
+                        Annuler
+                      </Button>
+                      <Button onClick={handleSave} disabled={loading}>
+                        {loading ? 'Enregistrement...' : 'Enregistrer'}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button onClick={() => setIsEditing(true)}>
+                      <Edit3 className="h-4 w-4 mr-2" />
+                      Modifier
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Stats Tab */}
+          <TabsContent value="stats" className="space-y-6">
+            {isCreator ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Campagnes</CardTitle>
+                    <Video className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatNumber(campaignStats.totalCampaigns)}</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Campagnes Actives</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatNumber(campaignStats.activeCampaigns)}</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Vues</CardTitle>
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatNumber(campaignStats.totalViews)}</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Dépensé</CardTitle>
+                    <Euro className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatCurrency(campaignStats.totalSpent)}</div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Soumissions</CardTitle>
+                    <Upload className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatNumber(submissionStats.totalSubmissions)}</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Soumissions Approuvées</CardTitle>
+                    <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatNumber(submissionStats.approvedSubmissions)}</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Gains</CardTitle>
+                    <Euro className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatCurrency(submissionStats.totalEarnings)}</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Vues</CardTitle>
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatNumber(submissionStats.totalViews)}</div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </TabsContent>
 
           {/* Campaign Focus Tab */}
@@ -548,40 +448,26 @@ export default function ProfilePage() {
             {isCreator ? (
               <Card>
                 <CardHeader>
-                  <CardTitle>Campaign Strategy</CardTitle>
+                  <CardTitle>Stratégie de Campagne</CardTitle>
                   <CardDescription>
-                    Optimize your campaigns for better performance and ROI
+                    Optimisez vos campagnes pour de meilleures performances et ROI
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="font-semibold mb-3">Campaign Performance</h3>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Success Rate</span>
-                            <span className="font-medium">85%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Avg. Submissions</span>
-                            <span className="font-medium">12 per campaign</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">ROI</span>
-                            <span className="font-medium text-green-600">+240%</span>
-                          </div>
-                        </div>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Budget moyen par campagne</Label>
+                      <div className="text-2xl font-bold">
+                        {campaignStats.totalCampaigns > 0 
+                          ? formatCurrency(campaignStats.totalSpent / campaignStats.totalCampaigns)
+                          : formatCurrency(0)
+                        }
                       </div>
-                      
-                      <div>
-                        <h3 className="font-semibold mb-3">Optimization Tips</h3>
-                        <ul className="space-y-1 text-sm text-muted-foreground">
-                          <li>• Set clear campaign rules</li>
-                          <li>• Offer competitive rates</li>
-                          <li>• Provide quality source material</li>
-                          <li>• Respond quickly to submissions</li>
-                        </ul>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Vues moyennes par campagne</Label>
+                      <div className="text-2xl font-bold">
+                        {formatNumber(campaignStats.avgPerformance)}
                       </div>
                     </div>
                   </div>
@@ -590,40 +476,29 @@ export default function ProfilePage() {
             ) : (
               <Card>
                 <CardHeader>
-                  <CardTitle>Submission History</CardTitle>
+                  <CardTitle>Performance des Clips</CardTitle>
                   <CardDescription>
-                    Track your clip submissions and earnings across campaigns
+                    Suivez vos performances et optimisez vos soumissions
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="font-semibold mb-3">Performance Metrics</h3>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Approval Rate</span>
-                            <span className="font-medium">{Math.round((submissionStats.approvedSubmissions / Math.max(submissionStats.totalSubmissions, 1)) * 100)}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Avg. Views per Clip</span>
-                            <span className="font-medium">{Math.round(submissionStats.totalViews / Math.max(submissionStats.totalSubmissions, 1)).toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Avg. Earnings</span>
-                            <span className="font-medium text-green-600">${(submissionStats.totalEarnings / Math.max(submissionStats.approvedSubmissions, 1)).toFixed(2)}</span>
-                          </div>
-                        </div>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Taux d'approbation</Label>
+                      <div className="text-2xl font-bold">
+                        {submissionStats.totalSubmissions > 0 
+                          ? `${Math.round((submissionStats.approvedSubmissions / submissionStats.totalSubmissions) * 100)}%`
+                          : '0%'
+                        }
                       </div>
-                      
-                      <div>
-                        <h3 className="font-semibold mb-3">Growth Tips</h3>
-                        <ul className="space-y-1 text-sm text-muted-foreground">
-                          <li>• Follow campaign rules carefully</li>
-                          <li>• Submit high-quality clips</li>
-                          <li>• Focus on trending content</li>
-                          <li>• Build relationships with creators</li>
-                        </ul>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Gains moyens par clip</Label>
+                      <div className="text-2xl font-bold">
+                        {submissionStats.approvedSubmissions > 0 
+                          ? formatCurrency(submissionStats.totalEarnings / submissionStats.approvedSubmissions)
+                          : formatCurrency(0)
+                        }
                       </div>
                     </div>
                   </div>

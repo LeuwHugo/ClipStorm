@@ -2,37 +2,20 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings as SettingsIcon, Globe, Bell, Shield, User, Palette } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Shield, User, Palette } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useLocale } from '@/hooks/use-locale';
-import { useTranslations } from '@/hooks/use-translations';
-import { locales, localeNames, localeFlags, Locale } from '@/lib/i18n';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
-  const { locale, changeLocale } = useLocale();
-  const { t } = useTranslations();
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
     marketing: false,
   });
-
-  const handleLanguageChange = (newLocale: string) => {
-    changeLocale(newLocale as Locale);
-    toast.success(t('settings.languageUpdated'));
-  };
 
   const handleNotificationChange = (type: keyof typeof notifications) => {
     setNotifications(prev => ({
@@ -49,189 +32,124 @@ export default function SettingsPage() {
         transition={{ duration: 0.5 }}
       >
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{t('settings.title')}</h1>
+          <h1 className="text-3xl font-bold mb-2">Paramètres</h1>
           <p className="text-muted-foreground">
-            Manage your account preferences and settings
+            Gérez vos préférences de compte et paramètres
           </p>
         </div>
 
         <div className="space-y-6">
-          {/* Language Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
-                {t('settings.language')}
-              </CardTitle>
-              <CardDescription>
-                Choose your preferred language for the interface
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="language">{t('settings.selectLanguage')}</Label>
-                  <Select value={locale} onValueChange={handleLanguageChange}>
-                    <SelectTrigger className="w-full mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {locales.map((loc) => (
-                        <SelectItem key={loc} value={loc}>
-                          <div className="flex items-center gap-2">
-                            <span>{localeFlags[loc]}</span>
-                            <span>{localeNames[loc]}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Theme Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="h-5 w-5" />
-                {t('settings.theme')}
-              </CardTitle>
-              <CardDescription>
-                Customize the appearance of the application
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Dark Mode</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Switch between light and dark themes
-                    </p>
-                  </div>
-                  <Switch />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Notification Settings */}
+          {/* Notifications */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                {t('settings.notifications')}
+                Notifications
               </CardTitle>
               <CardDescription>
-                Configure how you receive notifications
+                Configurez vos préférences de notifications
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Email Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive notifications via email
-                    </p>
-                  </div>
-                  <Switch
-                    checked={notifications.email}
-                    onCheckedChange={() => handleNotificationChange('email')}
-                  />
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Notifications par email</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Recevez des notifications importantes par email
+                  </p>
                 </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Push Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive push notifications in your browser
-                    </p>
-                  </div>
-                  <Switch
-                    checked={notifications.push}
-                    onCheckedChange={() => handleNotificationChange('push')}
-                  />
+                <Switch
+                  checked={notifications.email}
+                  onCheckedChange={() => handleNotificationChange('email')}
+                />
+              </div>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Notifications push</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Recevez des notifications instantanées
+                  </p>
                 </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Marketing Communications</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive updates about new features and promotions
-                    </p>
-                  </div>
-                  <Switch
-                    checked={notifications.marketing}
-                    onCheckedChange={() => handleNotificationChange('marketing')}
-                  />
+                <Switch
+                  checked={notifications.push}
+                  onCheckedChange={() => handleNotificationChange('push')}
+                />
+              </div>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Emails marketing</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Recevez des offres et nouveautés
+                  </p>
                 </div>
+                <Switch
+                  checked={notifications.marketing}
+                  onCheckedChange={() => handleNotificationChange('marketing')}
+                />
               </div>
             </CardContent>
           </Card>
 
-          {/* Privacy Settings */}
+          {/* Privacy */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                {t('settings.privacy')}
+                Confidentialité
               </CardTitle>
               <CardDescription>
-                Control your privacy and data sharing preferences
+                Gérez vos paramètres de confidentialité
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Profile Visibility</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Make your profile visible to other users
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Profil public</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Permettre aux autres utilisateurs de voir votre profil
+                  </p>
                 </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Analytics</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Help improve our service by sharing usage data
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
+                <Switch defaultChecked />
+              </div>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Statistiques partagées</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Partager vos statistiques de performance
+                  </p>
                 </div>
+                <Switch defaultChecked />
               </div>
             </CardContent>
           </Card>
 
-          {/* Account Settings */}
+          {/* Account */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                {t('settings.account')}
+                Compte
               </CardTitle>
               <CardDescription>
-                Manage your account and security settings
+                Gestion de votre compte
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Button variant="outline" className="w-full">
-                  Change Password
-                </Button>
-                <Button variant="outline" className="w-full">
-                  Download My Data
-                </Button>
-                <Separator />
-                <Button variant="destructive" className="w-full">
-                  Delete Account
-                </Button>
-              </div>
+            <CardContent className="space-y-4">
+              <Button variant="outline" className="w-full justify-start">
+                Changer le mot de passe
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                Supprimer le compte
+              </Button>
             </CardContent>
           </Card>
         </div>

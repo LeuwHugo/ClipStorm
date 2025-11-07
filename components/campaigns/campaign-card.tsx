@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, DollarSign, Eye, Play, Users, MoreHorizontal, Edit, Pause, Trash2, Upload } from 'lucide-react';
+import { Calendar, DollarSign, Eye, Play, Users, MoreHorizontal, Edit, Pause, Trash2, Upload, Copy, Check } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,7 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { PaymentDialog } from './payment-dialog';
 import { deleteImage } from '@/lib/supabase';
+import Image from 'next/image';
 
 interface CampaignCardProps {
   campaign: Campaign;
@@ -58,6 +59,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [copiedTrackingCode, setCopiedTrackingCode] = useState(false);
 
   const isOwner = user?.id === campaign.creatorId;
   const canManage = isCreator && isOwner;
@@ -81,6 +83,19 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
     }
   };
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'Active';
+      case 'paused':
+        return 'En pause';
+      case 'completed':
+        return 'Terminée';
+      default:
+        return status;
+    }
+  };
+
   const handleStatusToggle = async () => {
     if (!canManage || !onUpdate) return;
     
@@ -98,10 +113,10 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
       const updatedCampaign = { ...campaign, status: newStatus as 'active' | 'paused' | 'completed' };
       onUpdate(updatedCampaign);
       
-      toast.success(`Campaign ${newStatus === 'active' ? 'activated' : 'paused'} successfully!`);
+      toast.success(`Campagne ${newStatus === 'active' ? 'activée' : 'mise en pause'} avec succès !`);
     } catch (error) {
-      console.error('Error updating campaign status:', error);
-      toast.error('Failed to update campaign status');
+      console.error('Erreur lors de la mise à jour du statut de la campagne:', error);
+      toast.error('Échec de la mise à jour du statut de la campagne');
     } finally {
       setLoading(false);
     }
@@ -120,7 +135,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
           try {
             await deleteImage(bucket, path);
           } catch (imgErr) {
-            console.warn('Image deletion failed:', imgErr);
+            console.warn('Échec de la suppression de l\'image:', imgErr);
           }
         }
       }
@@ -132,13 +147,13 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
       if (error) throw error;
 
       onDelete(campaign.id);
-      toast.success('Campaign deleted successfully!');
+      toast.success('Campagne supprimée avec succès !');
       if (typeof window !== 'undefined') {
         window.location.reload();
       }
     } catch (error) {
-      console.error('Error deleting campaign:', error);
-      toast.error('Failed to delete campaign');
+      console.error('Erreur lors de la suppression de la campagne:', error);
+      toast.error('Échec de la suppression de la campagne');
     } finally {
       setLoading(false);
       setShowDeleteDialog(false);
@@ -150,6 +165,19 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
   const budgetUsed = totalSpent / (campaign.totalBudget || 1) * 100;
   const remainingBudget = (campaign.totalBudget || 0) - totalSpent;
 
+  const handleCopyTrackingCode = async () => {
+    if (!campaign.trackingCode) return;
+    
+    try {
+      await navigator.clipboard.writeText(campaign.trackingCode);
+      setCopiedTrackingCode(true);
+      toast.success('Code de tracking copié !');
+      setTimeout(() => setCopiedTrackingCode(false), 2000);
+    } catch (error) {
+      toast.error('Erreur lors de la copie du code');
+    }
+  };
+
   return (
     <>
       <Card className="group hover:shadow-lg transition-all duration-200 flex flex-col min-h-[580px] max-h-[650px]">
@@ -160,11 +188,11 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
               <div className="flex items-center gap-2 mb-2">
                 <CardTitle className="text-lg line-clamp-1 flex-1">{campaign.title}</CardTitle>
                 <Badge className={`${getStatusColor(campaign.status)} flex-shrink-0`}>
-                  {campaign.status}
+                  {getStatusText(campaign.status)}
                 </Badge>
               </div>
               <CardDescription className="line-clamp-2 text-sm">
-                ${campaign.payPerView.amountPerMillionViews}/1M views • Min {campaign.payPerView.minimumViews.toLocaleString()} views
+                €{campaign.payPerView.amountPerMillionViews}/1M vues • Min {campaign.payPerView.minimumViews.toLocaleString()} vues
               </CardDescription>
               
               {/* Creator Info */}
@@ -180,7 +208,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
                     </AvatarFallback>
                   </Avatar>
                   <span className="text-sm text-muted-foreground hover:text-foreground transition-colors truncate">
-                    by {creatorInfo.displayName}
+                    par {creatorInfo.displayName}
                   </span>
                 </div>
               )}
@@ -197,7 +225,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
                     <Edit className="h-4 w-4 mr-2" />
-                    Edit Campaign
+                    Modifier la campagne
                   </DropdownMenuItem>
                   
                   {canToggleStatus && (
@@ -205,12 +233,12 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
                     {campaign.status === 'active' ? (
                       <>
                         <Pause className="h-4 w-4 mr-2" />
-                        Pause Campaign
+                        Mettre en pause
                       </>
                     ) : (
                       <>
                         <Play className="h-4 w-4 mr-2" />
-                        Activate Campaign
+                        Activer la campagne
                       </>
                     )}
                   </DropdownMenuItem>
@@ -224,7 +252,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
                     disabled={loading}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Campaign
+                    Supprimer la campagne
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -236,10 +264,12 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
         <CardContent className="flex-1 flex flex-col space-y-4 pb-4">
           {/* Thumbnail */}
           <div className="relative aspect-video rounded-lg overflow-hidden flex-shrink-0">
-            <img
+            <Image
               src={campaign.thumbnail}
               alt={campaign.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center">
               <Button
@@ -248,7 +278,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
                 onClick={() => window.open(campaign.videoUrl, '_blank')}
               >
                 <Play className="h-4 w-4 mr-2" />
-                Watch
+                Regarder
               </Button>
             </div>
           </div>
@@ -256,7 +286,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
           {/* Budget Section */}
           <div className="space-y-3 flex-shrink-0">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Budget Used</span>
+              <span className="text-muted-foreground">Budget utilisé</span>
               <span className="font-medium">{budgetUsed.toFixed(1)}%</span>
             </div>
             <div className="w-full bg-muted rounded-full h-2">
@@ -267,10 +297,10 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
-                ${remainingBudget.toLocaleString()} remaining
+                €{remainingBudget.toLocaleString()} restant
               </span>
               <span className="text-muted-foreground">
-                of ${(campaign.totalBudget || 0).toLocaleString()}
+                sur €{(campaign.totalBudget || 0).toLocaleString()}
               </span>
             </div>
           </div>
@@ -279,19 +309,43 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
           <div className="grid grid-cols-2 gap-4 flex-shrink-0">
             <div className="flex items-center gap-2 text-sm">
               <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <span className="truncate">{submissionStats?.totalSubmissions || 0} submissions</span>
+              <span className="truncate">{submissionStats?.totalSubmissions || 0} soumissions</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <Eye className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <span className="truncate">{(submissionStats?.totalViews || 0).toLocaleString()} views</span>
+              <span className="truncate">{(submissionStats?.totalViews || 0).toLocaleString()} vues</span>
             </div>
           </div>
+
+          {/* MVP: Tracking Code Section */}
+          {campaign.trackingCode && (
+            <div className="flex-shrink-0">
+              <div className="text-xs text-muted-foreground mb-1">Code de tracking</div>
+              <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                <code className="font-mono text-sm font-bold flex-1">
+                  {campaign.trackingCode}
+                </code>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopyTrackingCode}
+                  className="h-6 w-6 p-0"
+                >
+                  {copiedTrackingCode ? (
+                    <Check className="h-3 w-3 text-green-600" />
+                  ) : (
+                    <Copy className="h-3 w-3" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Expiration Date */}
           {campaign.expiresAt && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground flex-shrink-0">
               <Calendar className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Expires {campaign.expiresAt.toLocaleDateString()}</span>
+              <span className="truncate">Expire le {campaign.expiresAt.toLocaleDateString('fr-FR')}</span>
             </div>
           )}
 
@@ -304,7 +358,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
               className="flex-1 min-w-0" 
               onClick={() => router.push(`/campaigns/${campaign.id}`)}
             >
-              <span className="truncate">View Campaign</span>
+              <span className="truncate">Voir la campagne</span>
             </Button>
             
             {/* Conditional buttons */}
@@ -315,7 +369,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
                 disabled={loading}
                 className="flex-shrink-0"
               >
-                <span className="truncate">{campaign.status === 'active' ? 'Pause' : 'Activate'}</span>
+                <span className="truncate">{campaign.status === 'active' ? 'Pause' : 'Activer'}</span>
               </Button>
             )}
             
@@ -326,7 +380,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
                 className="flex-shrink-0"
               >
                 <Upload className="h-4 w-4 mr-2 flex-shrink-0" />
-                <span className="truncate">Submit Clip</span>
+                <span className="truncate">Soumettre un clip</span>
               </Button>
             )}
             
@@ -336,7 +390,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
                 onClick={() => setShowPaymentDialog(true)}
                 className="flex-shrink-0"
               >
-                <span className="truncate">💸 Fund</span>
+                <span className="truncate">💸 Financer</span>
               </Button>
             )}
           </div>
@@ -366,20 +420,20 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
+            <AlertDialogTitle>Supprimer la campagne</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{campaign.title}&quot;? This action cannot be undone.
-              All submissions and data related to this campaign will be permanently removed.
+              Êtes-vous sûr de vouloir supprimer "{campaign.title}" ? Cette action ne peut pas être annulée.
+              Toutes les soumissions et données liées à cette campagne seront définitivement supprimées.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={loading}>Annuler</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDelete}
               disabled={loading}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {loading ? 'Deleting...' : 'Delete Campaign'}
+              {loading ? 'Suppression...' : 'Supprimer la campagne'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

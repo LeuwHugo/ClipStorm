@@ -1,32 +1,28 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useLocale } from './use-locale';
 
 type Messages = Record<string, any>;
 
-export const useTranslations = () => {
-  const { locale } = useLocale();
+export const useMessages = () => {
   const [messages, setMessages] = useState<Messages>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadMessages = async () => {
       try {
-        const response = await import(`@/messages/${locale}.json`);
+        const response = await import('@/messages/messages.json');
         setMessages(response.default);
       } catch (error) {
-        console.error(`Failed to load messages for locale ${locale}:`, error);
-        // Fallback to English
-        const fallback = await import('@/messages/en.json');
-        setMessages(fallback.default);
+        console.error('Failed to load messages:', error);
+        setMessages({});
       } finally {
         setLoading(false);
       }
     };
 
     loadMessages();
-  }, [locale]);
+  }, []);
 
   const t = (key: string, params?: Record<string, string | number>): string => {
     const keys = key.split('.');
@@ -54,5 +50,5 @@ export const useTranslations = () => {
     return value;
   };
 
-  return { t, loading, locale };
-};
+  return { t, loading };
+}; 

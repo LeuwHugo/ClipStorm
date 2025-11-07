@@ -9,7 +9,7 @@ import {
   TrendingUp, 
   Users,
   Video,
-  DollarSign,
+  Euro,
   Search
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,38 +17,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 const features = [
   {
     icon: Search,
-    title: 'Find Perfect Editors',
-    description: 'Browse through our curated marketplace of skilled video editors specializing in short-form content.',
+    title: 'Création de Campagnes Simple',
+    description: 'Créez des campagnes YouTube en 4 champs seulement : titre, URL, budget, durée et CPMV.',
     color: 'text-blue-600'
   },
   {
     icon: Zap,
-    title: 'Lightning Fast Delivery',
-    description: 'Get your edited videos in as little as 24 hours with our network of professional editors.',
+    title: 'Codes de Tracking Uniques',
+    description: 'Génération automatique de codes de tracking alphanumériques pour suivre vos clips.',
     color: 'text-yellow-600'
   },
   {
     icon: TrendingUp,
-    title: 'Viral-Ready Content',
-    description: 'Our editors know what makes content go viral on TikTok, Instagram Reels, and YouTube Shorts.',
+    title: 'Validation TikTok Automatique',
+    description: 'Système de validation basique des clips TikTok avec vérification des codes de tracking.',
     color: 'text-green-600'
   },
   {
     icon: Shield,
-    title: 'Secure Payments',
-    description: 'Protected transactions with escrow payments. Only pay when you\'re completely satisfied.',
+    title: 'Paiements Stripe Connect',
+    description: 'Paiements sécurisés via Stripe Connect avec escrow automatique de 7 jours.',
     color: 'text-purple-600'
   },
   {
     icon: Star,
-    title: 'Quality Guaranteed',
-    description: 'All editors are vetted and rated by the community. See portfolios and reviews before hiring.',
+    title: 'Dashboard Dual',
+    description: 'Interface séparée pour créateurs (campagnes, budget) et clippers (clips, gains).',
     color: 'text-orange-600'
   },
   {
-    icon: DollarSign,
-    title: 'Transparent Pricing',
-    description: 'Clear, upfront pricing based on video views. No hidden fees or surprise charges.',
+    icon: Euro,
+    title: 'Paiement par Vue',
+    description: 'Système CPMV transparent : payez selon les vues générées par vos clips.',
     color: 'text-emerald-600'
   }
 ];
@@ -65,14 +65,14 @@ export function FeaturesSection() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-            Everything You Need to Create
+            Fonctionnalités MVP pour
             <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-              {" "}Viral Content
+              {" "}Clips Viraux
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Our platform provides all the tools and talent you need to transform your raw footage 
-            into engaging short-form content that drives results.
+            Notre plateforme MVP connecte créateurs et clippers avec un système simple et efficace 
+            pour générer du contenu viral et des revenus.
           </p>
         </motion.div>
 

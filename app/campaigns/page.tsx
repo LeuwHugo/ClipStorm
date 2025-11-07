@@ -109,7 +109,7 @@ export default function CampaignsPage() {
         // Fetch submission stats for each campaign
         await fetchCampaignStats(campaignsData.map(c => c.id));
       } catch (error) {
-        console.error('Error fetching campaigns:', error);
+        console.error('Erreur lors de la récupération des campagnes:', error);
       } finally {
         setLoading(false);
       }
@@ -140,7 +140,7 @@ export default function CampaignsPage() {
         
         setCampaignStats(stats);
       } catch (error) {
-        console.error('Error fetching campaign stats:', error);
+        console.error('Erreur lors de la récupération des statistiques de campagne:', error);
       }
     };
     fetchCampaigns();
@@ -279,7 +279,7 @@ export default function CampaignsPage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading campaigns...</p>
+            <p className="text-muted-foreground">Chargement des campagnes...</p>
           </div>
         </div>
       </div>
@@ -295,44 +295,44 @@ export default function CampaignsPage() {
       >
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Video Campaigns</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Campagnes Vidéo</h1>
             <p className="text-muted-foreground mt-1">
-              Create and manage your video campaigns for content creators
+              Créez et gérez vos campagnes vidéo pour les créateurs de contenu
             </p>
           </div>
           {isCreator && (
             <Button onClick={() => setShowCreateDialog(true)} className="font-medium">
               <Plus className="h-4 w-4 mr-2" />
-              Create Campaign
+              Créer une campagne
             </Button>
           )}
         </div>
 
         {isClipper && (
           <div className="bg-muted/30 border border-border/50 rounded-xl p-6 mb-8">
-            <h3 className="font-semibold mb-2 text-lg">Browse Active Campaigns</h3>
+            <h3 className="font-semibold mb-2 text-lg">Parcourir les Campagnes Actives</h3>
             <p className="text-muted-foreground">
-              As a Clipper, you can view active campaigns and submit your clips for review. 
-              Browse the campaigns below and click &quot;Submit Clip&quot; on any active campaign that interests you.
+              En tant que Monteur, vous pouvez voir les campagnes actives et soumettre vos clips pour examen. 
+              Parcourez les campagnes ci-dessous et cliquez sur "Soumettre un clip" sur toute campagne active qui vous intéresse.
             </p>
           </div>
         )}
 
         {!isCreator && !isClipper && (
           <div className="bg-muted/30 border border-border/50 rounded-xl p-6 mb-8">
-            <h3 className="font-semibold mb-2 text-lg">Account Setup Required</h3>
+            <h3 className="font-semibold mb-2 text-lg">Configuration du Compte Requise</h3>
             <p className="text-muted-foreground">
-              Please complete your profile setup to access campaign features. 
-              Choose &quot;Creator&quot; to create campaigns or &quot;Clipper&quot; to submit clips to existing campaigns.
+              Veuillez compléter la configuration de votre profil pour accéder aux fonctionnalités de campagne. 
+              Choisissez "Créateur" pour créer des campagnes ou "Monteur" pour soumettre des clips aux campagnes existantes.
             </p>
           </div>
         )}
 
-        {/* Stats Cards */}
+        {/* Cartes de statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="border-border/50 hover:border-border transition-colors">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Campagnes</CardTitle>
               <Eye className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -342,7 +342,7 @@ export default function CampaignsPage() {
 
           <Card className="border-border/50 hover:border-border transition-colors">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
+              <CardTitle className="text-sm font-medium">Campagnes Actives</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -352,31 +352,31 @@ export default function CampaignsPage() {
 
           <Card className="border-border/50 hover:border-border transition-colors">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
+              <CardTitle className="text-sm font-medium">Budget Total</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${stats.totalBudget.toLocaleString()}</div>
+              <div className="text-2xl font-bold">€{stats.totalBudget.toLocaleString()}</div>
             </CardContent>
           </Card>
 
           <Card className="border-border/50 hover:border-border transition-colors">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Dépensé</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${stats.totalSpent.toLocaleString()}</div>
+              <div className="text-2xl font-bold">€{stats.totalSpent.toLocaleString()}</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Search and Filters */}
+        {/* Recherche et Filtres */}
         <div className="flex gap-4 mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search campaigns..."
+              placeholder="Rechercher des campagnes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 border-border/50 focus:border-border"
@@ -388,7 +388,7 @@ export default function CampaignsPage() {
             <SheetTrigger asChild>
               <Button variant="outline" className="border-border/50 hover:border-border">
                 <Filter className="h-4 w-4 mr-2" />
-                Filters
+                Filtres
                 {getActiveFiltersCount() > 0 && (
                   <Badge variant="secondary" className="ml-2 h-5 w-5 rounded-full p-0 text-xs">
                     {getActiveFiltersCount()}
@@ -398,24 +398,24 @@ export default function CampaignsPage() {
             </SheetTrigger>
             <SheetContent>
               <SheetHeader>
-                <SheetTitle>Filter Campaigns</SheetTitle>
+                <SheetTitle>Filtrer les Campagnes</SheetTitle>
                 <SheetDescription>
-                  Filter campaigns by budget, views, and other criteria.
+                  Filtrez les campagnes par budget, vues et autres critères.
                 </SheetDescription>
               </SheetHeader>
               <div className="space-y-6 mt-6">
-                {/* Budget Range */}
+                {/* Plage de Budget */}
                 <div className="space-y-3">
-                  <Label>Budget Range ($)</Label>
+                  <Label>Plage de Budget (€)</Label>
                   <div className="grid grid-cols-2 gap-3">
                     <Input
-                      placeholder="Min budget"
+                      placeholder="Budget min"
                       type="number"
                       value={filters.minBudget}
                       onChange={(e) => setFilters({...filters, minBudget: e.target.value})}
                     />
                     <Input
-                      placeholder="Max budget"
+                      placeholder="Budget max"
                       type="number"
                       value={filters.maxBudget}
                       onChange={(e) => setFilters({...filters, maxBudget: e.target.value})}
@@ -425,11 +425,11 @@ export default function CampaignsPage() {
                 
                 <Separator />
                 
-                {/* Minimum Views */}
+                {/* Vues Minimum */}
                 <div className="space-y-3">
-                  <Label>Minimum Views</Label>
+                  <Label>Vues Minimum</Label>
                   <Input
-                    placeholder="e.g., 1000000"
+                    placeholder="ex: 1000000"
                     type="number"
                     value={filters.minViews}
                     onChange={(e) => setFilters({...filters, minViews: e.target.value})}
@@ -438,7 +438,7 @@ export default function CampaignsPage() {
                 
                 <Separator />
                 
-                {/* Checkboxes */}
+                {/* Cases à cocher */}
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -448,7 +448,7 @@ export default function CampaignsPage() {
                         setFilters({...filters, hasSubmissions: checked as boolean})
                       }
                     />
-                    <Label htmlFor="hasSubmissions">Has submissions</Label>
+                    <Label htmlFor="hasSubmissions">A des soumissions</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -458,7 +458,7 @@ export default function CampaignsPage() {
                         setFilters({...filters, hasExpiry: checked as boolean})
                       }
                     />
-                    <Label htmlFor="hasExpiry">Has expiry date</Label>
+                    <Label htmlFor="hasExpiry">A une date d'expiration</Label>
                   </div>
                 </div>
                 
@@ -471,13 +471,13 @@ export default function CampaignsPage() {
                     onClick={clearFilters}
                     className="flex-1"
                   >
-                    Clear Filters
+                    Effacer les filtres
                   </Button>
                   <Button 
                     onClick={() => setShowFilters(false)}
                     className="flex-1"
                   >
-                    Apply Filters
+                    Appliquer les filtres
                   </Button>
                 </div>
               </div>
@@ -489,7 +489,7 @@ export default function CampaignsPage() {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="border-border/50 hover:border-border">
                 <ArrowUpDown className="h-4 w-4 mr-2" />
-                Sort
+                Trier
                 {sortOrder === 'asc' ? (
                   <ArrowUp className="h-4 w-4 ml-2" />
                 ) : (
@@ -500,39 +500,39 @@ export default function CampaignsPage() {
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={() => {setSortBy('createdAt'); setSortOrder('desc');}}>
                 <ArrowDown className="h-4 w-4 mr-2" />
-                Newest First
+                Plus récentes d'abord
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {setSortBy('createdAt'); setSortOrder('asc');}}>
                 <ArrowUp className="h-4 w-4 mr-2" />
-                Oldest First
+                Plus anciennes d'abord
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {setSortBy('title'); setSortOrder('asc');}}>
                 <ArrowUp className="h-4 w-4 mr-2" />
-                Title A-Z
+                Titre A-Z
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {setSortBy('title'); setSortOrder('desc');}}>
                 <ArrowDown className="h-4 w-4 mr-2" />
-                Title Z-A
+                Titre Z-A
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {setSortBy('budget'); setSortOrder('desc');}}>
                 <ArrowDown className="h-4 w-4 mr-2" />
-                Highest Budget
+                Budget le plus élevé
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {setSortBy('budget'); setSortOrder('asc');}}>
                 <ArrowUp className="h-4 w-4 mr-2" />
-                Lowest Budget
+                Budget le plus bas
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {setSortBy('views'); setSortOrder('desc');}}>
                 <ArrowDown className="h-4 w-4 mr-2" />
-                Most Views
+                Plus de vues
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {setSortBy('submissions'); setSortOrder('desc');}}>
                 <ArrowDown className="h-4 w-4 mr-2" />
-                Most Submissions
+                Plus de soumissions
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {setSortBy('expiresAt'); setSortOrder('asc');}}>
                 <ArrowUp className="h-4 w-4 mr-2" />
-                Expires Soon
+                Expire bientôt
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -541,19 +541,19 @@ export default function CampaignsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           {isCreator && (
             <TabsList className="grid w-full grid-cols-5 mb-6">
-              <TabsTrigger value="all">All Campaigns</TabsTrigger>
-              <TabsTrigger value="draft">Draft</TabsTrigger>
+              <TabsTrigger value="all">Toutes les Campagnes</TabsTrigger>
+              <TabsTrigger value="draft">Brouillon</TabsTrigger>
               <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="paused">Paused</TabsTrigger>
-              <TabsTrigger value="completed">Completed</TabsTrigger>
+              <TabsTrigger value="paused">En pause</TabsTrigger>
+              <TabsTrigger value="completed">Terminée</TabsTrigger>
             </TabsList>
           )}
           
           {isClipper && (
             <div className="mb-6">
-              <h2 className="text-xl font-semibold">Active Campaigns</h2>
+              <h2 className="text-xl font-semibold">Campagnes Actives</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Submit your clips to any of these active campaigns
+                Soumettez vos clips à l'une de ces campagnes actives
               </p>
             </div>
           )}
@@ -582,14 +582,14 @@ export default function CampaignsPage() {
               <Card className="text-center py-12 border-border/50">
                 <CardContent>
                   <Eye className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No campaigns found</h3>
+                  <h3 className="text-lg font-semibold mb-2">Aucune campagne trouvée</h3>
                   <p className="text-muted-foreground mb-4">
-                    {searchTerm ? 'Try adjusting your search terms' : 'Create your first campaign to get started'}
+                    {searchTerm ? 'Essayez d\'ajuster vos termes de recherche' : 'Créez votre première campagne pour commencer'}
                   </p>
                   {!searchTerm && isCreator && (
                     <Button onClick={() => setShowCreateDialog(true)}>
                       <Plus className="h-4 w-4 mr-2" />
-                      Create Campaign
+                      Créer une campagne
                     </Button>
                   )}
                 </CardContent>

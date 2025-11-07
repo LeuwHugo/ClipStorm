@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Upload, ExternalLink, CheckCircle, Eye, Heart, MessageCircle, Hash, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -317,10 +318,12 @@ export function SubmitClipDialog({
                     {/* Thumbnail */}
                     {metadata.thumbnail && (
                       <div className="relative aspect-video rounded-lg overflow-hidden">
-                        <img
+                        <Image
                           src={metadata.thumbnail}
                           alt={metadata.title || 'Clip preview'}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 400px"
                         />
                         <div className="absolute top-2 right-2">
                           <Badge variant="secondary" className="capitalize">

@@ -26,14 +26,14 @@ export default function LoginPage() {
 
     try {
       await signInWithEmail(email, password);
-      toast.success('Successfully logged in!');
+      toast.success('Connexion réussie !');
       router.push('/dashboard');
     } catch (error) {
       // Check if the error is related to email confirmation
       if (error instanceof Error && error.message.includes('Email not confirmed')) {
-        toast.error('Please check your email and click the confirmation link before logging in. Don\'t forget to check your spam folder!');
+        toast.error('Veuillez vérifier votre email et cliquer sur le lien de confirmation avant de vous connecter. N\'oubliez pas de vérifier vos spams !');
       } else {
-        toast.error('Failed to login. Please check your credentials.');
+        toast.error('Échec de la connexion. Veuillez vérifier vos identifiants.');
       }
     } finally {
       setLoading(false);
@@ -44,13 +44,13 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithGoogle();
-      toast.success('Redirecting to Google...');
+      toast.success('Redirection vers Google...');
       // Don't redirect here - OAuth will handle it
     } catch (error) {
       if (error instanceof Error && error.message.includes('provider is not enabled')) {
-        toast.error('Google login is not configured yet. Please use email login or contact support.');
+        toast.error('La connexion Google n\'est pas encore configurée. Veuillez utiliser la connexion par email ou contacter le support.');
       } else {
-        toast.error('Failed to login with Google.');
+        toast.error('Échec de la connexion avec Google.');
       }
     } finally {
       setLoading(false);
@@ -61,13 +61,13 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithTwitch();
-      toast.success('Redirecting to Twitch...');
+      toast.success('Redirection vers Twitch...');
       // Don't redirect here - OAuth will handle it
     } catch (error) {
       if (error instanceof Error && error.message.includes('provider is not enabled')) {
-        toast.error('Twitch login is not configured yet. Please use email login or contact support.');
+        toast.error('La connexion Twitch n\'est pas encore configurée. Veuillez utiliser la connexion par email ou contacter le support.');
       } else {
-        toast.error('Failed to login with Twitch.');
+        toast.error('Échec de la connexion avec Twitch.');
       }
     } finally {
       setLoading(false);
@@ -87,13 +87,13 @@ export default function LoginPage() {
             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <Video className="h-6 w-6 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+            <CardTitle className="text-2xl font-bold">Bon retour</CardTitle>
             <CardDescription>
-              Sign in to your ClipWave account
+              Connectez-vous à votre compte ClipWave
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* OAuth Providers */}
+            {/* Fournisseurs OAuth */}
             <div className="space-y-3">
               <Button
                 variant="outline"
@@ -119,7 +119,7 @@ export default function LoginPage() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                Continue with Google
+                Continuer avec Google
               </Button>
 
               <Button
@@ -131,7 +131,7 @@ export default function LoginPage() {
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
                 </svg>
-                Continue with Twitch
+                Continuer avec Twitch
               </Button>
             </div>
 
@@ -141,7 +141,7 @@ export default function LoginPage() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with email
+                  Ou continuer avec email
                 </span>
               </div>
             </div>
@@ -152,7 +152,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Entrez votre email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -160,12 +160,12 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Mot de passe</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
+                    placeholder="Entrez votre mot de passe"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -187,20 +187,20 @@ export default function LoginPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? 'Connexion en cours...' : 'Se connecter'}
               </Button>
             </form>
 
             <div className="text-center text-sm">
               <Link href="/forgot-password" className="text-primary hover:underline">
-                Forgot your password?
+                Mot de passe oublié ?
               </Link>
             </div>
 
             <div className="text-center text-sm">
-              Don't have an account?{' '}
+              Vous n'avez pas de compte ?{' '}
               <Link href="/signup" className="text-primary hover:underline">
-                Sign up
+                S'inscrire
               </Link>
             </div>
           </CardContent>

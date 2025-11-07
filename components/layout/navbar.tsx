@@ -2,10 +2,9 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Video, User, Search, Plus, Bell } from 'lucide-react';
+import { Video, User, Plus, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/ui/mode-toggle';
-import { LanguageSelector } from '@/components/ui/language-selector';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/use-auth';
 import { useUserRole } from '@/hooks/use-user-role';
-import { useTranslations } from '@/hooks/use-translations';
+import { useMessages } from '@/hooks/use-messages';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
@@ -24,7 +23,7 @@ import { logout } from '@/lib/auth';
 export function Navbar() {
   const { user } = useAuth();
   const { isCreator } = useUserRole();
-  const { t } = useTranslations();
+  const { t } = useMessages();
   const router = useRouter();
   const [userAvatar, setUserAvatar] = useState<string>('');
 
@@ -64,13 +63,6 @@ export function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4">
-          <Link href="/marketplace" className="hidden">
-            <Button variant="ghost" size="sm">
-              <Search className="h-4 w-4 mr-2" />
-              {t('common.browse')}
-            </Button>
-          </Link>
-
           {user ? (
             <>
               <Link href="/dashboard">
@@ -84,6 +76,24 @@ export function Navbar() {
                   {t('navigation.campaigns')}
                 </Button>
               </Link>
+
+              {isCreator && (
+                <Link href="/create-campaign">
+                  <Button size="sm" className="hidden sm:flex">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Créer une campagne
+                  </Button>
+                </Link>
+              )}
+
+              {!isCreator && (
+                <Link href="/submit-clips">
+                  <Button size="sm" className="hidden sm:flex">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Soumettre des clips
+                  </Button>
+                </Link>
+              )}
               
               <Button variant="ghost" size="sm" className="relative">
                 <Bell className="h-4 w-4" />
@@ -91,7 +101,7 @@ export function Navbar() {
                   variant="secondary" 
                   className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
                 >
-                  3
+                  0
                 </Badge>
               </Button>
 
@@ -122,11 +132,6 @@ export function Navbar() {
                       {t('common.profile')}
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings">
-                      {t('common.settings')}
-                    </Link>
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     {t('common.logout')}
                   </DropdownMenuItem>
@@ -149,7 +154,6 @@ export function Navbar() {
           )}
 
           <div className="flex items-center gap-2">
-            <LanguageSelector />
             <ModeToggle />
           </div>
         </div>

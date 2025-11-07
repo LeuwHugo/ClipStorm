@@ -232,12 +232,12 @@ export default function CampaignDetailsClient() {
         <div className="flex items-center gap-4 mb-6">
           <Button variant="ghost" size="sm" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            Retour
           </Button>
           <div className="flex-1">
             <h1 className="text-3xl font-bold">{campaign.title}</h1>
             <div className="flex items-center gap-4 mt-2">
-              <p className="text-muted-foreground">Campaign Details & Submissions</p>
+              <p className="text-muted-foreground">Détails de la campagne & Soumissions</p>
               
               {/* Creator Info */}
               {creatorInfo && (
@@ -260,7 +260,7 @@ export default function CampaignDetailsClient() {
           </div>
           <Button onClick={() => setShowSubmitDialog(true)}>
             <Upload className="h-4 w-4 mr-2" />
-            Submit Clip
+            Soumettre un Clip
           </Button>
         </div>
 
@@ -284,24 +284,24 @@ export default function CampaignDetailsClient() {
                       onClick={() => window.open(campaign.videoUrl, '_blank')}
                     >
                       <Play className="h-5 w-5 mr-2" />
-                      Watch Original
+                      Regarder l'Original
                     </Button>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <h3 className="font-semibold mb-2">Payment Terms</h3>
+                    <h3 className="font-semibold mb-2">Conditions de Paiement</h3>
                     <div className="bg-muted/50 p-4 rounded-lg">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-muted-foreground">Per Million Views</p>
+                          <p className="text-sm text-muted-foreground">Par Million de Vues</p>
                           <p className="text-2xl font-bold text-green-600">
-                            ${campaign.payPerView.amountPerMillionViews}
+                            {campaign.payPerView.amountPerMillionViews}€
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Minimum Views</p>
+                          <p className="text-sm text-muted-foreground">Vues Minimum</p>
                           <p className="text-lg font-semibold">
                             {campaign.payPerView.minimumViews.toLocaleString()}
                           </p>
@@ -311,7 +311,7 @@ export default function CampaignDetailsClient() {
                   </div>
 
                   <div>
-                    <h3 className="font-semibold mb-2">Campaign Rules</h3>
+                    <h3 className="font-semibold mb-2">Règles de la Campagne</h3>
                     <div className="space-y-2">
                       {campaign.rules.map((rule, index) => (
                         <div key={index} className="flex items-start gap-2">
@@ -334,13 +334,13 @@ export default function CampaignDetailsClient() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <DollarSign className="h-5 w-5" />
-                  Budget Status
+                  État du Budget
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-2">
-                    <span>Used</span>
+                    <span>Utilisé</span>
                     <span>{budgetUsed.toFixed(1)}%</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
@@ -352,16 +352,16 @@ export default function CampaignDetailsClient() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Remaining</span>
-                    <span className="font-medium">${remainingBudget.toLocaleString()}</span>
+                    <span className="text-sm text-muted-foreground">Restant</span>
+                    <span className="font-medium">{remainingBudget.toLocaleString()}€</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Total Budget</span>
-                    <span className="font-medium">${campaign.totalBudget?.toLocaleString()}</span>
+                    <span className="text-sm text-muted-foreground">Budget Total</span>
+                    <span className="font-medium">{campaign.totalBudget?.toLocaleString()}€</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Total Paid</span>
-                    <span className="font-medium text-green-600">${campaignStats.totalPaid.toLocaleString()}</span>
+                    <span className="text-sm text-muted-foreground">Total Payé</span>
+                    <span className="font-medium text-green-600">{campaignStats.totalPaid.toLocaleString()}€</span>
                   </div>
                 </div>
               </CardContent>
@@ -377,16 +377,16 @@ export default function CampaignDetailsClient() {
               <CardContent className="space-y-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold">{campaignStats.totalViews.toLocaleString()}</div>
-                  <div className="text-sm text-muted-foreground">Total Views</div>
+                  <div className="text-sm text-muted-foreground">Vues Totales</div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
                     <div className="text-lg font-semibold">{campaignStats.totalSubmissions}</div>
-                    <div className="text-xs text-muted-foreground">Submissions</div>
+                    <div className="text-xs text-muted-foreground">Soumissions</div>
                   </div>
                   <div>
                     <div className="text-lg font-semibold">{campaignStats.approvedSubmissions}</div>
-                    <div className="text-xs text-muted-foreground">Approved</div>
+                    <div className="text-xs text-muted-foreground">Approuvées</div>
                   </div>
                 </div>
               </CardContent>
@@ -394,22 +394,22 @@ export default function CampaignDetailsClient() {
 
             {campaign.expiresAt && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    Campaign Ends
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <div className="text-lg font-semibold">
-                      {campaign.expiresAt.toLocaleDateString()}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {Math.ceil((campaign.expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days left
-                    </div>
+                              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Fin de Campagne
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center">
+                  <div className="text-lg font-semibold">
+                    {campaign.expiresAt.toLocaleDateString()}
                   </div>
-                </CardContent>
+                  <div className="text-sm text-muted-foreground">
+                    {Math.ceil((campaign.expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))} jours restants
+                  </div>
+                </div>
+              </CardContent>
               </Card>
             )}
           </div>
@@ -417,9 +417,9 @@ export default function CampaignDetailsClient() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="submissions">All Submissions ({submissions.length})</TabsTrigger>
-            <TabsTrigger value="approved">Approved ({approvedSubmissions.length})</TabsTrigger>
+            <TabsTrigger value="overview">Aperçu</TabsTrigger>
+            <TabsTrigger value="submissions">Toutes les Soumissions ({submissions.length})</TabsTrigger>
+            <TabsTrigger value="approved">Approuvées ({approvedSubmissions.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
@@ -458,10 +458,10 @@ export default function CampaignDetailsClient() {
                             </span>
                           </div>
                           <div className="flex items-center gap-4 text-sm">
-                            <span>{sub.viewCount.toLocaleString()} views</span>
+                            <span>{sub.viewCount.toLocaleString()} vues</span>
                             {sub.paymentAmount && (
                               <span className="text-green-600 font-medium">
-                                ${sub.paymentAmount}
+                                {sub.paymentAmount}€
                               </span>
                             )}
                           </div>

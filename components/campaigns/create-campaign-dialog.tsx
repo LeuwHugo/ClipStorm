@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Trash2, Upload, X, Image as ImageIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -15,14 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
 import {
   Form,
   FormControl,
@@ -33,11 +25,11 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Campaign } from '@/lib/types';
-import { uploadImage, getImageUrl } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
 import { PaymentDialog } from './payment-dialog';
 import { createClient } from '@supabase/supabase-js';
+import { validateYouTubeUrlBasic, getYouTubeThumbnail } from '@/lib/youtube-utils';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -45,17 +37,11 @@ const supabase = createClient(
 );
 
 const createCampaignSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
-  videoUrl: z.string().url('Please enter a valid URL'),
-  thumbnail: z.string().min(1, 'Please upload a thumbnail image'),
-  paymentAmount: z.number().min(1, 'Payment amount must be at least 1'),
-  paymentMetric: z.enum(['thousand', 'million'], {
-    required_error: 'Please select a payment metric',
-  }),
-  minimumViews: z.number().min(1000, 'Minimum views must be at least 1,000'),
-  totalBudget: z.number().min(1, 'Budget must be at least $1'),
-  expiresAt: z.string().optional(),
-  rules: z.array(z.string().min(1, 'Rule cannot be empty')).min(1, 'At least one rule is required'),
+  title: z.string().min(1, 'Le titre est requis').max(100, 'Le titre doit faire moins de 100 caractères'),
+  videoUrl: z.string().url('Veuillez entrer une URL YouTube valide'),
+  totalBudget: z.number().min(20, 'Le budget doit être d\'au moins 20€'),
+  durationDays: z.number().min(1, 'La durée doit être d\'au moins 1 jour').max(30, 'La durée ne peut pas dépasser 30 jours'),
+  cpmvRate: z.number().min(0.01, 'Le CPMV doit être d\'au moins 0.01€'),
 });
 
 type CreateCampaignForm = z.infer<typeof createCampaignSchema>;
@@ -72,10 +58,7 @@ export function CreateCampaignDialog({
   onCreateCampaign,
 }: CreateCampaignDialogProps) {
   const { user } = useAuth();
-  const [rules, setRules] = useState<string[]>(['']);
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [thumbnailPreview, setThumbnailPreview] = useState<string>('');
-  const [uploading, setUploading] = useState(false);
+  const [validating, setValidating] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [pendingCampaign, setPendingCampaign] = useState<any>(null);
 
@@ -84,115 +67,60 @@ export function CreateCampaignDialog({
     defaultValues: {
       title: '',
       videoUrl: '',
-      thumbnail: '',
-      paymentAmount: 250,
-      paymentMetric: 'million',
-      minimumViews: 100000,
-      totalBudget: 1000,
-      expiresAt: '',
-      rules: [''],
+      totalBudget: 100,
+      durationDays: 30,
+      cpmvRate: 0.50,
     },
   });
 
-  const addRule = () => {
-    setRules([...rules, '']);
-    form.setValue('rules', [...rules, '']);
-  };
-
-  const removeRule = (index: number) => {
-    const newRules = rules.filter((_, i) => i !== index);
-    setRules(newRules);
-    form.setValue('rules', newRules);
-  };
-
-  const updateRule = (index: number, value: string) => {
-    const newRules = [...rules];
-    newRules[index] = value;
-    setRules(newRules);
-    form.setValue('rules', newRules);
-  };
-
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select a valid image file');
-      return;
+  const validateYouTubeUrl = async (url: string) => {
+    const validation = validateYouTubeUrlBasic(url);
+    if (!validation.isValid) {
+      form.setError('videoUrl', { message: 'URL YouTube invalide' });
+      return false;
     }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size must be less than 5MB');
-      return;
-    }
-
-    setUploading(true);
-    setThumbnailFile(file);
-
-    try {
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(file);
-      setThumbnailPreview(previewUrl);
-
-      // Upload to Supabase Storage
-      const fileName = `${Date.now()}-${file.name}`;
-      const filePath = `campaign-thumbnails/${fileName}`;
-      
-      await uploadImage(file, 'campaign-images', filePath);
-      const publicUrl = getImageUrl('campaign-images', filePath);
-      
-      form.setValue('thumbnail', publicUrl);
-      toast.success('Image uploaded successfully!');
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      setThumbnailFile(null);
-      setThumbnailPreview('');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const removeThumbnail = () => {
-    setThumbnailFile(null);
-    setThumbnailPreview('');
-    form.setValue('thumbnail', '');
-    
-    // Revoke the object URL to free memory
-    if (thumbnailPreview) {
-      URL.revokeObjectURL(thumbnailPreview);
-    }
+    return true;
   };
 
   const onSubmit = async (data: CreateCampaignForm) => {
     if (!user) {
-      toast.error('You must be logged in to create a campaign');
+      toast.error('Vous devez être connecté pour créer une campagne');
       return;
     }
 
-    // Convert payment amount based on metric
-    const amountPerMillionViews = data.paymentMetric === 'million' 
-      ? data.paymentAmount 
-      : data.paymentAmount * 1000; // Convert thousands to millions
+    setValidating(true);
 
-      const campaignData = {
+    // Valider l'URL YouTube
+    const isValidUrl = await validateYouTubeUrl(data.videoUrl);
+    if (!isValidUrl) {
+      setValidating(false);
+      return;
+    }
+
+    // Extraire l'ID YouTube et générer la miniature
+    const validation = validateYouTubeUrlBasic(data.videoUrl);
+    const youtubeVideoId = validation.videoId;
+    const thumbnail = youtubeVideoId ? getYouTubeThumbnail(youtubeVideoId, 'high') : '';
+
+    const campaignData = {
       creator_id: user.id, 
       title: data.title,
       video_url: data.videoUrl,
-      thumbnail: form.getValues('thumbnail'), // Use the uploaded image URL
-      /* ✅  flatten into the real columns */
-      amount_per_million_views: amountPerMillionViews,
-      minimum_views: data.minimumViews,
-      rules: data.rules.filter(rule => rule.trim() !== ''),
+      thumbnail: thumbnail,
+      youtube_video_id: youtubeVideoId,
+      youtube_validation_status: 'pending',
+      amount_per_million_views: data.cpmvRate * 1000, // CPMV = €/M vues, donc pour 1M vues = CPMV * 1000
+      minimum_views: 1000, // Valeur par défaut pour MVP
+      rules: [], // Pas de règles pour MVP
       status: 'draft', // Start as draft until payment is completed
       total_budget: data.totalBudget,
       remaining_budget: data.totalBudget,
-      expires_at: data.expiresAt === "" ? null : data.expiresAt,
+      duration_days: data.durationDays,
+      cpmv_rate: data.cpmvRate,
+      expires_at: new Date(Date.now() + data.durationDays * 24 * 60 * 60 * 1000).toISOString(),
     };
 
-/* 1️⃣  Persist a “paused” draft so we get a real ID */
+/* 1️⃣  Persist a "paused" draft so we get a real ID */
     try {
       const { data, error } = await supabase
         .from('campaigns')
@@ -221,13 +149,20 @@ export function CreateCampaignDialog({
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
         expiresAt: row.expires_at ? new Date(row.expires_at) : undefined,
+        trackingCode: row.tracking_code,
+        durationDays: row.duration_days,
+        cpmvRate: row.cpmv_rate,
+        youtubeVideoId: row.youtube_video_id,
+        youtubeValidationStatus: row.youtube_validation_status,
       });
       onOpenChange(false);
 
       setPendingCampaign(null); // Ne pas ouvrir la popup de paiement automatiquement
     } catch (err) {
       console.error(err);
-      toast.error('Failed to create campaign draft');
+      toast.error('Échec de la création du brouillon de campagne');
+    } finally {
+      setValidating(false);
     }
   };
 
@@ -239,152 +174,38 @@ export function CreateCampaignDialog({
       
       // Reset form and state
       form.reset();
-      setRules(['']);
-      removeThumbnail();
       setPendingCampaign(null);
       setShowPaymentDialog(false);
       
-      toast.success('Campaign created and funded successfully!');
+      toast.success('Campagne créée et financée avec succès !');
     }
   };
 
-  const watchedPaymentAmount = form.watch('paymentAmount');
-  const watchedPaymentMetric = form.watch('paymentMetric');
+
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create New Campaign</DialogTitle>
-          <DialogDescription>
-            Set up a new video campaign for content creators to participate in.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Créer une Nouvelle Campagne</DialogTitle>
+            <DialogDescription>
+              Configurez votre campagne TikTok pour attirer les meilleurs monteurs vidéo
+            </DialogDescription>
+          </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Campaign Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Epic Gaming Moments Compilation" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    A catchy title that describes your video content
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="videoUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Video URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://youtube.com/watch?v=..." {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Link to your original video (YouTube, Twitch, etc.)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Thumbnail Upload */}
-            <FormField
-              control={form.control}
-              name="thumbnail"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Thumbnail Image</FormLabel>
-                  <FormControl>
-                    <div className="space-y-4">
-                      {!thumbnailPreview ? (
-                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
-                          <div className="text-center">
-                            <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                            <div className="mt-4">
-                              <Label htmlFor="thumbnail-upload" className="cursor-pointer">
-                                <span className="mt-2 block text-sm font-medium text-foreground">
-                                  Upload thumbnail image
-                                </span>
-                                <span className="mt-1 block text-xs text-muted-foreground">
-                                  PNG, JPG, GIF up to 5MB
-                                </span>
-                              </Label>
-                              <Input
-                                id="thumbnail-upload"
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                                className="hidden"
-                                disabled={uploading}
-                              />
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="mt-4"
-                              onClick={() => document.getElementById('thumbnail-upload')?.click()}
-                              disabled={uploading}
-                            >
-                              <Upload className="h-4 w-4 mr-2" />
-                              {uploading ? 'Uploading...' : 'Choose Image'}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="relative">
-                          <img
-                            src={thumbnailPreview}
-                            alt="Thumbnail preview"
-                            className="w-full h-48 object-cover rounded-lg"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="absolute top-2 right-2"
-                            onClick={removeThumbnail}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Upload an eye-catching thumbnail for your campaign
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Payment Configuration */}
-            <div className="space-y-4">
-              <Label className="text-base font-medium">Payment Configuration</Label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* MVP: 4 champs seulement */}
+              <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="paymentAmount"
+                  name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Payment Amount ($)</FormLabel>
+                      <FormLabel>Titre de la Campagne</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="250"
-                          {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
-                        />
+                        <Input placeholder="Ex: Montage Gaming TikTok Viral" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -393,164 +214,129 @@ export function CreateCampaignDialog({
 
                 <FormField
                   control={form.control}
-                  name="paymentMetric"
+                  name="videoUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Per</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormLabel>URL YouTube</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://youtube.com/watch?v=..." {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Lien vers la vidéo YouTube source
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="totalBudget"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Budget (€)</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select metric" />
-                          </SelectTrigger>
+                          <Input
+                            type="number"
+                            placeholder="100"
+                            min="20"
+                            step="0.01"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="thousand">Thousand Views</SelectItem>
-                          <SelectItem value="million">Million Views</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormDescription>Minimum 20€</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="durationDays"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Durée (jours)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="30"
+                            min="1"
+                            max="30"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormDescription>Maximum 30 jours</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <FormField
                   control={form.control}
-                  name="minimumViews"
+                  name="cpmvRate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Minimum Views</FormLabel>
+                      <FormLabel>CPMV (€/M vues)</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder="100000"
+                          placeholder="0.50"
+                          min="0.01"
+                          step="0.01"
                           {...field}
                           onChange={(e) => field.onChange(Number(e.target.value))}
                         />
                       </FormControl>
+                      <FormDescription>
+                        Coût par mille vues (ex: 0.50€ = 500€ par million de vues)
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-              
-              {/* Payment Preview */}
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <h4 className="font-medium mb-2">Payment Preview</h4>
-                <p className="text-sm text-muted-foreground">
-                  Creators will earn <span className="font-medium text-foreground">
-                    ${watchedPaymentAmount}
-                  </span> per {watchedPaymentMetric === 'million' ? 'million' : 'thousand'} views
-                  {watchedPaymentMetric === 'thousand' && (
-                    <span className="text-xs ml-1">
-                      (${watchedPaymentAmount * 1000}/million views)
-                    </span>
-                  )}
-                </p>
+
+              {/* MVP: Affichage du tracking code généré */}
+              <div className="p-4 bg-muted rounded-lg">
+                <div className="text-sm text-muted-foreground mb-2">
+                  Code de tracking généré automatiquement
+                </div>
+                <div className="font-mono text-lg font-bold bg-background p-2 rounded border">
+                  {form.watch('title') ? 'ABC123XY' : '---' /* Placeholder - sera généré côté serveur */}
+                </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="totalBudget"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Total Budget ($)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="1000"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              <FormField
-                control={form.control}
-                name="expiresAt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Expiration Date (Optional)</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div>
-              <Label className="text-base font-medium">Campaign Rules</Label>
-              <p className="text-sm text-muted-foreground mb-4">
-                Set specific requirements for content creators to follow
-              </p>
-              <div className="space-y-3">
-                {rules.map((rule, index) => (
-                  <div key={index} className="flex gap-2">
-                    <div className="flex-1">
-                      <Input
-                        placeholder={`Rule ${index + 1}: e.g., Add credit "@solocrea.media"`}
-                        value={rule}
-                        onChange={(e) => updateRule(index, e.target.value)}
-                      />
-                    </div>
-                    {rules.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeRule(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
+              <div className="flex justify-end gap-4 pt-6">
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
-                  onClick={addRule}
-                  className="w-full"
+                  onClick={() => onOpenChange(false)}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Rule
+                  Annuler
+                </Button>
+                <Button type="submit" disabled={validating}>
+                  {validating ? 'Validation...' : 'Créer la Campagne'}
                 </Button>
               </div>
-            </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
 
-            <div className="flex gap-3 pt-4">
-              <Button type="submit" className="flex-1" disabled={uploading}>
-                Create Campaign
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </Form>
-
-        {/* Payment Dialog */}
-        {pendingCampaign && (
-          <PaymentDialog
-            open={showPaymentDialog}
-            onOpenChange={setShowPaymentDialog}
-            campaignTitle={pendingCampaign.title}
-            amount={pendingCampaign.total_budget || 0}
-            campaignId={pendingCampaign.id}   // real ID, no fallback
-            onPaymentSuccess={handlePaymentSuccess}
-          />
-        )}
-      </DialogContent>
-    </Dialog>
+      {showPaymentDialog && pendingCampaign && (
+        <PaymentDialog
+          open={showPaymentDialog}
+          onOpenChange={setShowPaymentDialog}
+          amount={pendingCampaign.totalBudget}
+          campaignId={pendingCampaign.id}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
+    </>
   );
 }

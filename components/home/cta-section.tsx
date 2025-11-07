@@ -19,43 +19,43 @@ export function CTASection() {
           <div className="mb-8">
             <Sparkles className="h-16 w-16 text-primary mx-auto mb-6" />
             <h2 className="text-3xl lg:text-5xl font-bold mb-6">
-              Ready to Create
+              Prêt à Tester Notre
               <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                {" "}Viral Content?
+                {" "}MVP ?
               </span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-              Join thousands of content creators who are already using ClipWave 
-              to scale their content and grow their audiences. Start your journey today.
+              Rejoignez notre plateforme MVP pour connecter créateurs et clippers. 
+              Créez des campagnes, soumettez des clips et générez des revenus. Testez dès maintenant !
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <Link href="/signup">
               <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-6">
-                Start Creating Now
+                Commencer Maintenant
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link href="/marketplace">
+            <Link href="/campaigns">
               <Button variant="outline" size="lg" className="w-full sm:w-auto text-lg px-8 py-6">
-                Browse Editors
+                Voir les Campagnes
               </Button>
             </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
-              <div className="text-3xl font-bold text-primary mb-2">24h</div>
-              <div className="text-muted-foreground">Average Delivery</div>
+              <div className="text-3xl font-bold text-primary mb-2">4</div>
+              <div className="text-muted-foreground">Champs Campagne</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-primary mb-2">4.9★</div>
-              <div className="text-muted-foreground">Average Rating</div>
+              <div className="text-3xl font-bold text-primary mb-2">8</div>
+              <div className="text-muted-foreground">Caractères Tracking</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-primary mb-2">$0.05</div>
-              <div className="text-muted-foreground">Starting Price/1K Views</div>
+              <div className="text-3xl font-bold text-primary mb-2">7j</div>
+              <div className="text-muted-foreground">Escrow Automatique</div>
             </div>
           </div>
         </motion.div>
