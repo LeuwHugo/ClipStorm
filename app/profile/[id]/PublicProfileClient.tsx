@@ -156,7 +156,7 @@ export default function PublicProfileClient() {
         <div className="text-center py-12">
           <h1 className="text-2xl font-bold mb-4">User Not Found</h1>
           <p className="text-muted-foreground mb-6">
-            The user you're looking for doesn't exist or has been removed.
+            The user you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
           <Button onClick={() => router.back()}>
             Go Back

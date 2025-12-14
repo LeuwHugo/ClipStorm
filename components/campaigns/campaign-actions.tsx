@@ -1,15 +1,15 @@
-'use client&apos;;
+'use client';
 
-import { useState } from 'react&apos;;
-import { MoreHorizontal, Edit, Pause, Play, Trash2 } from 'lucide-react&apos;;
-import { Button } from &apos;@/components/ui/button&apos;;
+import { useState } from 'react';
+import { MoreHorizontal, Edit, Pause, Play, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from &apos;@/components/ui/dropdown-menu&apos;;
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,10 +19,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from &apos;@/components/ui/alert-dialog&apos;;
-import { Campaign } from &apos;@/lib/types&apos;;
-import { supabase } from &apos;@/lib/supabase&apos;;
-import { toast } from 'sonner&apos;;
+} from '@/components/ui/alert-dialog';
+import { Campaign } from '@/lib/types';
+import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 interface CampaignActionsProps {
   campaign: Campaign;
@@ -37,22 +37,22 @@ export function CampaignActions({ campaign, onUpdate, onDelete }: CampaignAction
   const handleStatusToggle = async () => {
     setLoading(true);
     try {
-      const newStatus = campaign.status === 'active&apos; ? 'paused&apos; : 'active&apos;;
+      const newStatus = campaign.status === 'active' ? 'paused' : 'active';
       
       const { error } = await supabase
-        .from('campaigns&apos;)
+        .from('campaigns')
         .update({ status: newStatus })
-        .eq('id&apos;, campaign.id);
+        .eq('id', campaign.id);
 
       if (error) throw error;
 
-      const updatedCampaign = { ...campaign, status: newStatus as 'active&apos; | 'paused&apos; | 'completed&apos; };
+      const updatedCampaign = { ...campaign, status: newStatus as 'active' | 'paused' | 'completed' };
       onUpdate(updatedCampaign);
       
-      toast.success(`Campaign ${newStatus === 'active&apos; ? 'activated&apos; : 'paused&apos;} successfully!`);
+      toast.success(`Campaign ${newStatus === 'active' ? 'activated' : 'paused'} successfully!`);
     } catch (error) {
-      console.error(&apos;Error updating campaign status:&apos;, error);
-      toast.error(&apos;Failed to update campaign status&apos;);
+      console.error('Error updating campaign status:', error);
+      toast.error('Failed to update campaign status');
     } finally {
       setLoading(false);
     }
@@ -62,17 +62,17 @@ export function CampaignActions({ campaign, onUpdate, onDelete }: CampaignAction
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('campaigns&apos;)
+        .from('campaigns')
         .delete()
-        .eq('id&apos;, campaign.id);
+        .eq('id', campaign.id);
 
       if (error) throw error;
 
       onDelete(campaign.id);
-      toast.success(&apos;Campaign deleted successfully!&apos;);
+      toast.success('Campaign deleted successfully!');
     } catch (error) {
-      console.error(&apos;Error deleting campaign:&apos;, error);
-      toast.error(&apos;Failed to delete campaign&apos;);
+      console.error('Error deleting campaign:', error);
+      toast.error('Failed to delete campaign');
     } finally {
       setLoading(false);
       setShowDeleteDialog(false);
@@ -83,25 +83,25 @@ export function CampaignActions({ campaign, onUpdate, onDelete }: CampaignAction
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost&quot; size="sm&quot; disabled={loading}>
-            <MoreHorizontal className="h-4 w-4&quot; />
+          <Button variant="ghost" size="sm" disabled={loading}>
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end&quot;>
+        <DropdownMenuContent align="end">
           <DropdownMenuItem>
-            <Edit className="h-4 w-4 mr-2&quot; />
+            <Edit className="h-4 w-4 mr-2" />
             Edit Campaign
           </DropdownMenuItem>
           
           <DropdownMenuItem onClick={handleStatusToggle} disabled={loading}>
-            {campaign.status === 'active&apos; ? (
+            {campaign.status === 'active' ? (
               <>
-                <Pause className="h-4 w-4 mr-2&quot; />
+                <Pause className="h-4 w-4 mr-2" />
                 Pause Campaign
               </>
             ) : (
               <>
-                <Play className="h-4 w-4 mr-2&quot; />
+                <Play className="h-4 w-4 mr-2" />
                 Activate Campaign
               </>
             )}
@@ -111,10 +111,10 @@ export function CampaignActions({ campaign, onUpdate, onDelete }: CampaignAction
           
           <DropdownMenuItem 
             onClick={() => setShowDeleteDialog(true)}
-            className="text-destructive focus:text-destructive&quot;
+            className="text-destructive focus:text-destructive"
             disabled={loading}
           >
-            <Trash2 className="h-4 w-4 mr-2&quot; />
+            <Trash2 className="h-4 w-4 mr-2" />
             Delete Campaign
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -134,9 +134,9 @@ export function CampaignActions({ campaign, onUpdate, onDelete }: CampaignAction
             <AlertDialogAction 
               onClick={handleDelete}
               disabled={loading}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90&quot;
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {loading ? &apos;Deleting...&apos; : &apos;Delete Campaign&apos;}
+              {loading ? 'Deleting...' : 'Delete Campaign'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -422,7 +422,7 @@ export function CampaignCard({ campaign, creatorInfo, submissionStats, onUpdate,
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer la campagne</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer "{campaign.title}" ? Cette action ne peut pas être annulée.
+              Êtes-vous sûr de vouloir supprimer &quot;{campaign.title}&quot; ? Cette action ne peut pas être annulée.
               Toutes les soumissions et données liées à cette campagne seront définitivement supprimées.
             </AlertDialogDescription>
           </AlertDialogHeader>

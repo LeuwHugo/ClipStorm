@@ -189,7 +189,7 @@ export default function OnboardingPage() {
                 </div>
                 <CardTitle className="text-2xl">Monteur Vidéo</CardTitle>
                 <CardDescription>
-                  Je veux soumettre des clips et gagner de l'argent
+                  Je veux soumettre des clips et gagner de l&apos;argent
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -204,7 +204,7 @@ export default function OnboardingPage() {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Gagner de l'argent automatiquement
+                    Gagner de l&apos;argent automatiquement
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
@@ -258,7 +258,7 @@ export default function OnboardingPage() {
                   id="displayName"
                   value={formData.displayName}
                   onChange={(e) => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
-                  placeholder="Votre nom ou nom d'utilisateur"
+                  placeholder="Votre nom ou nom d&apos;utilisateur"
                 />
               </div>
 
@@ -333,7 +333,7 @@ export default function OnboardingPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="subscriberCount">Nombre d'abonnés</Label>
+                      <Label htmlFor="subscriberCount">Nombre d&apos;abonnés</Label>
                       <Input
                         id="subscriberCount"
                         type="number"

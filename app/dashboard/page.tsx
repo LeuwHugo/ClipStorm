@@ -99,6 +99,7 @@ export default function DashboardPage() {
         fetchClipperData();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isCreator, isClipper]);
 
   const fetchCreatorData = async () => {
@@ -386,7 +387,7 @@ export default function DashboardPage() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Taux d'Approbation</CardTitle>
+                  <CardTitle className="text-sm font-medium">Taux d&apos;Approbation</CardTitle>
                   <CheckCircle className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -408,7 +409,7 @@ export default function DashboardPage() {
         {/* Onglets */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+            <TabsTrigger value="overview">Vue d&apos;ensemble</TabsTrigger>
             <TabsTrigger value="recent">
               {isCreator ? 'Campagnes récentes' : 'Soumissions récentes'}
             </TabsTrigger>

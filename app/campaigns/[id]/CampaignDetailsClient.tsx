@@ -284,7 +284,7 @@ export default function CampaignDetailsClient() {
                       onClick={() => window.open(campaign.videoUrl, '_blank')}
                     >
                       <Play className="h-5 w-5 mr-2" />
-                      Regarder l'Original
+                      Regarder l&apos;Original
                     </Button>
                   </div>
                 </div>

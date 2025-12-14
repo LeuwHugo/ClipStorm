@@ -99,6 +99,7 @@ export default function ProfilePage() {
         fetchSubmissionStats();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isCreator, isClipper]);
 
   const fetchUserProfile = async () => {
@@ -287,7 +288,7 @@ export default function ProfilePage() {
                   
                   <div className="flex-1 space-y-4">
                     <div>
-                      <Label htmlFor="displayName">Nom d'affichage</Label>
+                      <Label htmlFor="displayName">Nom d&apos;affichage</Label>
                       <Input
                         id="displayName"
                         value={profile.displayName}
@@ -484,7 +485,7 @@ export default function ProfilePage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Taux d'approbation</Label>
+                      <Label>Taux d&apos;approbation</Label>
                       <div className="text-2xl font-bold">
                         {submissionStats.totalSubmissions > 0 
                           ? `${Math.round((submissionStats.approvedSubmissions / submissionStats.totalSubmissions) * 100)}%`

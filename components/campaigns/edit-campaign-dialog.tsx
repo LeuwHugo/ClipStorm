@@ -259,7 +259,7 @@ export function EditCampaignDialog({
                 name="expiresAt"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date d'Expiration (Optionnel)</FormLabel>
+                    <FormLabel>Date d&apos;Expiration (Optionnel)</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>

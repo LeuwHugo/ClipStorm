@@ -36,7 +36,7 @@ export default function SignupPage() {
       <div className="min-h-screen flex items-center justify-center px-4 py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Accès restreint</h1>
-          <p className="text-muted-foreground">L'inscription est désactivée en mode production.</p>
+          <p className="text-muted-foreground">L&apos;inscription est désactivée en mode production.</p>
         </div>
       </div>
     );

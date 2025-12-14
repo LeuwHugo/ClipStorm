@@ -313,6 +313,7 @@ export function PaymentDialog({
     } else {
       setClientSecret('');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const stripeOptions = {

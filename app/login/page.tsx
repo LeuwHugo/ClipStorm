@@ -217,9 +217,9 @@ export default function LoginPage() {
             </div>
 
             <div className="text-center text-sm">
-              Vous n'avez pas de compte ?{' '}
+              Vous n&apos;avez pas de compte ?{' '}
               <Link href="/signup" className="text-primary hover:underline">
-                S'inscrire
+                S&apos;inscrire
               </Link>
             </div>
           </CardContent>

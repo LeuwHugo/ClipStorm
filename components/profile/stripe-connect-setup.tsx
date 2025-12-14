@@ -153,7 +153,7 @@ export function StripeConnectSetup({ stripeAccountId, onAccountCreated }: Stripe
             </p>
 
             <div className="bg-muted/50 p-4 rounded-lg">
-              <h4 className="font-medium mb-2">What you'll need:</h4>
+              <h4 className="font-medium mb-2">What you&apos;ll need:</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li>• Government-issued ID</li>
                 <li>• Bank account information</li>

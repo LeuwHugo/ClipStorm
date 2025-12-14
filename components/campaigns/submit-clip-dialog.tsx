@@ -196,7 +196,7 @@ export function SubmitClipDialog({
         <DialogHeader>
           <DialogTitle>Submit Your Clip</DialogTitle>
           <DialogDescription>
-            Submit your clip for "{campaign.title}" to check if it meets the payment requirements.
+            Submit your clip for &quot;{campaign.title}&quot; to check if it meets the payment requirements.
           </DialogDescription>
         </DialogHeader>
 

@@ -313,7 +313,7 @@ export default function CampaignsPage() {
             <h3 className="font-semibold mb-2 text-lg">Parcourir les Campagnes Actives</h3>
             <p className="text-muted-foreground">
               En tant que Monteur, vous pouvez voir les campagnes actives et soumettre vos clips pour examen. 
-              Parcourez les campagnes ci-dessous et cliquez sur "Soumettre un clip" sur toute campagne active qui vous intéresse.
+              Parcourez les campagnes ci-dessous et cliquez sur &quot;Soumettre un clip&quot; sur toute campagne active qui vous intéresse.
             </p>
           </div>
         )}
@@ -323,7 +323,7 @@ export default function CampaignsPage() {
             <h3 className="font-semibold mb-2 text-lg">Configuration du Compte Requise</h3>
             <p className="text-muted-foreground">
               Veuillez compléter la configuration de votre profil pour accéder aux fonctionnalités de campagne. 
-              Choisissez "Créateur" pour créer des campagnes ou "Monteur" pour soumettre des clips aux campagnes existantes.
+              Choisissez &quot;Créateur&quot; pour créer des campagnes ou &quot;Monteur&quot; pour soumettre des clips aux campagnes existantes.
             </p>
           </div>
         )}
@@ -458,7 +458,7 @@ export default function CampaignsPage() {
                         setFilters({...filters, hasExpiry: checked as boolean})
                       }
                     />
-                    <Label htmlFor="hasExpiry">A une date d'expiration</Label>
+                    <Label htmlFor="hasExpiry">A une date d&apos;expiration</Label>
                   </div>
                 </div>
                 
@@ -500,11 +500,11 @@ export default function CampaignsPage() {
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={() => {setSortBy('createdAt'); setSortOrder('desc');}}>
                 <ArrowDown className="h-4 w-4 mr-2" />
-                Plus récentes d'abord
+                Plus récentes d&apos;abord
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {setSortBy('createdAt'); setSortOrder('asc');}}>
                 <ArrowUp className="h-4 w-4 mr-2" />
-                Plus anciennes d'abord
+                Plus anciennes d&apos;abord
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {setSortBy('title'); setSortOrder('asc');}}>
                 <ArrowUp className="h-4 w-4 mr-2" />
@@ -553,7 +553,7 @@ export default function CampaignsPage() {
             <div className="mb-6">
               <h2 className="text-xl font-semibold">Campagnes Actives</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Soumettez vos clips à l'une de ces campagnes actives
+                Soumettez vos clips à l&apos;une de ces campagnes actives
               </p>
             </div>
           )}
