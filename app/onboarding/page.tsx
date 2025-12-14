@@ -253,7 +253,7 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               {/* Basic Info */}
               <div>
-                <Label htmlFor="displayName">Nom d'affichage</Label>
+                <Label htmlFor="displayName">Nom d&apos;affichage</Label>
                 <Input
                   id="displayName"
                   value={formData.displayName}
