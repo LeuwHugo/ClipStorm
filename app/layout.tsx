@@ -9,21 +9,21 @@ import { Toaster } from '@/components/ui/sonner';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'ClipWave - TikTok Campaign Platform',
+  title: 'ClipStorm - TikTok Campaign Platform',
   description: 'Create and submit TikTok clips for viral campaigns. Connect creators with clippers for short-form video content.',
   keywords: 'TikTok, video campaigns, short-form content, viral videos, content creators, clippers',
-  authors: [{ name: 'ClipWave' }],
+  authors: [{ name: 'ClipStorm' }],
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://clipwave.com',
-    title: 'ClipWave - TikTok Campaign Platform',
+    url: 'https://clipstorm.com',
+    title: 'ClipStorm - TikTok Campaign Platform',
     description: 'Create and submit TikTok clips for viral campaigns.',
-    siteName: 'ClipWave',
+    siteName: 'ClipStorm',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ClipWave - TikTok Campaign Platform',
+    title: 'ClipStorm - TikTok Campaign Platform',
     description: 'Create and submit TikTok clips for viral campaigns.',
   },
   robots: {

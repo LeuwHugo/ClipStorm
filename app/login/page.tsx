@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Video } from 'lucide-react';
+import { Eye, EyeOff, Tornado } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +18,26 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isProduction, setIsProduction] = useState(false);
   const router = useRouter();
+  
+  // Check if we're in production mode
+  useEffect(() => {
+    // NODE_ENV is replaced at build time by Next.js
+    setIsProduction(process.env.NODE_ENV === 'production');
+  }, []);
+  
+  // Block login page in production
+  if (isProduction) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Accès restreint</h1>
+          <p className="text-muted-foreground">La connexion est désactivée en mode production.</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,11 +104,11 @@ export default function LoginPage() {
         <Card className="shadow-xl">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <Video className="h-6 w-6 text-primary" />
+              <Tornado className="h-6 w-6 text-primary" />
             </div>
             <CardTitle className="text-2xl font-bold">Bon retour</CardTitle>
             <CardDescription>
-              Connectez-vous à votre compte ClipWave
+              Connectez-vous à votre compte ClipStorm
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

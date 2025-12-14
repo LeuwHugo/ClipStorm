@@ -4,6 +4,11 @@ import type { User } from '@supabase/supabase-js'
 import { toast } from 'sonner'
 
 export const signInWithEmail = async (email: string, password: string) => {
+  // Block login in production
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Login is disabled in production mode')
+  }
+  
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -14,6 +19,11 @@ export const signInWithEmail = async (email: string, password: string) => {
 }
 
 export const signUpWithEmail = async (email: string, password: string, displayName?: string, role?: string) => {
+  // Block signup in production
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Signup is disabled in production mode')
+  }
+  
   // First, sign up the user without any metadata to avoid trigger issues
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -47,6 +57,11 @@ export const signUpWithEmail = async (email: string, password: string, displayNa
 }
 
 export const signInWithGoogle = async () => {
+  // Block login in production
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Login is disabled in production mode')
+  }
+  
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -63,6 +78,11 @@ export const signInWithGoogle = async () => {
 }
 
 export const signInWithTwitch = async () => {
+  // Block login in production
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Login is disabled in production mode')
+  }
+  
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'twitch',
     options: {
@@ -83,6 +103,11 @@ export const signInWithTikTok = async () => {
 }
 
 export const logout = async () => {
+  // Block logout in production
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Logout is disabled in production mode')
+  }
+  
   const { error } = await supabase.auth.signOut()
   if (error) throw error
 }

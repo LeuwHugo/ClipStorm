@@ -1,7 +1,7 @@
 /*
-  # Complete ClipWave Database Schema
+  # Complete ClipStorm Database Schema
 
-  This migration creates all the necessary tables for the ClipWave platform.
+  This migration creates all the necessary tables for the ClipStorm platform.
 
   ## Tables Created:
   1. Users - User profiles for creators and editors

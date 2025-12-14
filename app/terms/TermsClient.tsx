@@ -40,10 +40,10 @@ export function TermsClient() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">
-                  Welcome to ClipWave (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). These Terms of Service (&quot;Terms&quot;) govern your use of our platform that connects content creators with video editors for viral content creation.
+                  Welcome to ClipStorm (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). These Terms of Service (&quot;Terms&quot;) govern your use of our platform that connects content creators with video editors for viral content creation.
                 </p>
                 <p className="text-muted-foreground">
-                  By accessing or using ClipWave, you agree to be bound by these Terms. If you disagree with any part of these terms, you may not access our service.
+                  By accessing or using ClipStorm, you agree to be bound by these Terms. If you disagree with any part of these terms, you may not access our service.
                 </p>
               </CardContent>
             </Card>
@@ -63,7 +63,7 @@ export function TermsClient() {
                 <div className="space-y-3">
                   <div>
                     <h4 className="font-semibold mb-2">Service</h4>
-                    <p className="text-muted-foreground">The ClipWave platform, including all features, functionality, and content.</p>
+                    <p className="text-muted-foreground">The ClipStorm platform, including all features, functionality, and content.</p>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">Creator</h4>
@@ -128,7 +128,7 @@ export function TermsClient() {
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <p className="text-muted-foreground">
-                    ClipWave provides a platform that:
+                    ClipStorm provides a platform that:
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                     <li>Connects content creators with video editors</li>
@@ -219,7 +219,7 @@ export function TermsClient() {
                     <li>Creators pay the full campaign budget upfront</li>
                     <li>Funds are held in escrow until a winner is selected</li>
                     <li>Winning editors receive 90% of the campaign budget</li>
-                    <li>ClipWave retains a 10% platform fee</li>
+                    <li>ClipStorm retains a 10% platform fee</li>
                     <li>Payments are processed within 24-48 hours of selection</li>
                     <li>All fees are clearly disclosed before payment</li>
                   </ul>
@@ -248,7 +248,7 @@ export function TermsClient() {
                     <li>Editors retain rights to their editing techniques and style</li>
                     <li>Winning submissions transfer full rights to the creator</li>
                     <li>Non-winning submissions remain the property of the editor</li>
-                    <li>ClipWave retains rights to platform content and branding</li>
+                    <li>ClipStorm retains rights to platform content and branding</li>
                   </ul>
                 </div>
               </CardContent>
@@ -320,7 +320,7 @@ export function TermsClient() {
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <p className="text-muted-foreground">
-                    In no event shall ClipWave be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
+                    In no event shall ClipStorm be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
                   </p>
                   <p className="text-muted-foreground">
                     Our total liability to you for any claims arising from these Terms or your use of the Service shall not exceed the amount you paid us in the 12 months preceding the claim.
@@ -369,8 +369,8 @@ export function TermsClient() {
                     If you have any questions about these Terms of Service, please contact us at:
                   </p>
                   <div className="bg-muted p-4 rounded-lg">
-                    <p className="font-semibold">ClipWave Support</p>
-                    <p className="text-muted-foreground">Email: legal@clipwave.com</p>
+                    <p className="font-semibold">ClipStorm Support</p>
+                    <p className="text-muted-foreground">Email: legal@clipstorm.com</p>
                     <p className="text-muted-foreground">Address: [Your Business Address]</p>
                   </div>
                 </div>

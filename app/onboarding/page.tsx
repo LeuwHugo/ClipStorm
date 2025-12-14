@@ -131,7 +131,7 @@ export default function OnboardingPage() {
           transition={{ duration: 0.5 }}
         >
           <div className="text-center mb-12">
-            <h1 className="text-3xl font-bold mb-4">Bienvenue sur ClipWave</h1>
+            <h1 className="text-3xl font-bold mb-4">Bienvenue sur ClipStorm</h1>
             <p className="text-xl text-muted-foreground">
               Choisissez votre rôle pour commencer
             </p>

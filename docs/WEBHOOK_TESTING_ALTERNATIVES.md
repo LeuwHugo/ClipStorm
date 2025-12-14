@@ -1,4 +1,4 @@
-# 🔗 Webhook Testing Alternatives for ClipWave
+# 🔗 Webhook Testing Alternatives for ClipStorm
 
 Since you're experiencing permission issues with installing ngrok globally, here are several alternative approaches to test Stripe webhooks locally.
 
@@ -79,7 +79,7 @@ npm install vercel
 npx vercel
 
 # Use the deployment URL for webhooks
-# Example: https://clipwave-abc123.vercel.app/api/payments/webhook
+# Example: https://clipstorm-abc123.vercel.app/api/payments/webhook
 ```
 
 ## 🎯 **Option 5: Mock Webhook Testing**

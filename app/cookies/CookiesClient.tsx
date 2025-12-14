@@ -43,7 +43,7 @@ export function CookiesClient() {
                   Cookies are small text files that are stored on your device when you visit our website. They help us provide you with a better experience by remembering your preferences and analyzing how you use our platform.
                 </p>
                 <p className="text-muted-foreground">
-                  This Cookie Policy explains how ClipWave uses cookies and similar technologies to enhance your browsing experience.
+                  This Cookie Policy explains how ClipStorm uses cookies and similar technologies to enhance your browsing experience.
                 </p>
               </CardContent>
             </Card>
@@ -380,8 +380,8 @@ export function CookiesClient() {
                     If you have questions about our use of cookies or this policy, please contact us:
                   </p>
                   <div className="bg-muted p-4 rounded-lg">
-                    <p className="font-semibold">ClipWave Privacy Team</p>
-                    <p className="text-muted-foreground">Email: privacy@clipwave.com</p>
+                    <p className="font-semibold">ClipStorm Privacy Team</p>
+                    <p className="text-muted-foreground">Email: privacy@clipstorm.com</p>
                     <p className="text-muted-foreground">Subject: Cookie Policy Inquiry</p>
                     <p className="text-muted-foreground">Response Time: Within 30 days</p>
                   </div>

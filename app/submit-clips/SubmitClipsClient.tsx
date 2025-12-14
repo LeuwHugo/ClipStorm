@@ -180,7 +180,7 @@ export function SubmitClipsClient() {
           className="mb-16"
         >
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Submit Clips on ClipWave?</h2>
+            <h2 className="text-3xl font-bold mb-4">Why Submit Clips on ClipStorm?</h2>
             <p className="text-lg text-muted-foreground">
               Join thousands of clippers earning money doing what they love
             </p>

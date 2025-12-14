@@ -53,7 +53,7 @@ NEXT_PUBLIC_YOUTUBE_API_KEY=AIzaSyB... # Votre clé API YouTube
 #### Étape 2: Créer une application
 1. Dans le dashboard développeur, cliquez sur "Create App"
 2. Remplissez les informations :
-   - **App Name** : Nom de votre application (ex: "ClipWave")
+   - **App Name** : Nom de votre application (ex: "ClipStorm")
    - **App Description** : Description de votre app
    - **Platform** : Sélectionnez "Web"
    - **Category** : Sélectionnez "Entertainment" ou "Social"

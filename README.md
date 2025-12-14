@@ -1,4 +1,4 @@
-# ClipWave - TikTok Campaign Platform
+# ClipStorm - TikTok Campaign Platform
 
 A modern SaaS platform that connects content creators with clippers for viral TikTok campaigns.
 
@@ -36,7 +36,7 @@ A modern SaaS platform that connects content creators with clippers for viral Ti
 1. **Clone and Install**
    ```bash
    git clone <repository-url>
-   cd clipwave
+   cd clipstorm
    pnpm install
    ```
 
@@ -72,7 +72,7 @@ A modern SaaS platform that connects content creators with clippers for viral Ti
 ## Project Structure
 
 ```
-clipwave/
+clipstorm/
 ├── app/                    # Next.js app directory
 │   ├── auth/              # Auth pages (login, signup)
 │   ├── dashboard/         # User dashboard

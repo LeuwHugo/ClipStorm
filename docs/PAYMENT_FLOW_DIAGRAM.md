@@ -1,13 +1,13 @@
-# 💰 ClipWave Payment Flow Diagram
+# 💰 ClipStorm Payment Flow Diagram
 
 ## Overview
-This document illustrates the complete payment flow in ClipWave, from campaign creation to clipper payouts.
+This document illustrates the complete payment flow in ClipStorm, from campaign creation to clipper payouts.
 
 ## 🔄 Complete Payment Flow
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   CREATOR       │    │   CLIPWAVE      │    │   STRIPE        │
+│   CREATOR       │    │   CLIPSTORM      │    │   STRIPE        │
 │                 │    │   PLATFORM      │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │

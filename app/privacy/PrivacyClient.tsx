@@ -40,10 +40,10 @@ export function PrivacyClient() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">
-                  ClipWave (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
+                  ClipStorm (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
                 </p>
                 <p className="text-muted-foreground">
-                  By using ClipWave, you consent to the data practices described in this policy. If you do not agree with our policies and practices, please do not use our Service.
+                  By using ClipStorm, you consent to the data practices described in this policy. If you do not agree with our policies and practices, please do not use our Service.
                 </p>
               </CardContent>
             </Card>
@@ -235,7 +235,7 @@ export function PrivacyClient() {
                     <li><strong>Withdrawal:</strong> Withdraw consent where applicable</li>
                   </ul>
                   <p className="text-muted-foreground">
-                    To exercise these rights, contact us at privacy@clipwave.com
+                    To exercise these rights, contact us at privacy@clipstorm.com
                   </p>
                 </div>
               </CardContent>
@@ -392,8 +392,8 @@ export function PrivacyClient() {
                     If you have questions about this Privacy Policy or our data practices, please contact us:
                   </p>
                   <div className="bg-muted p-4 rounded-lg">
-                    <p className="font-semibold">ClipWave Privacy Team</p>
-                    <p className="text-muted-foreground">Email: privacy@clipwave.com</p>
+                    <p className="font-semibold">ClipStorm Privacy Team</p>
+                    <p className="text-muted-foreground">Email: privacy@clipstorm.com</p>
                     <p className="text-muted-foreground">Address: [Your Business Address]</p>
                     <p className="text-muted-foreground">Response Time: Within 30 days</p>
                   </div>

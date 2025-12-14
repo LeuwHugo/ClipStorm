@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['cbscoropxgydvrsqsxnr.supabase.co', 'img.youtube.com'],
+    domains: ['cbscoropxgydvrsqsxnr.supabase.co', 'img.youtube.com', 'images.unsplash.com'],
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {

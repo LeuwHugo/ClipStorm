@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Video, User, Plus, Bell } from 'lucide-react';
+import { Tornado, User, Plus, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/ui/mode-toggle';
 import {
@@ -19,6 +19,7 @@ import { useMessages } from '@/hooks/use-messages';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
+import { toast } from 'sonner';
 
 export function Navbar() {
   const { user } = useAuth();
@@ -50,16 +51,26 @@ export function Navbar() {
   }, [user]);
 
   const handleLogout = async () => {
-    await logout();
-    router.push('/');
+    // Block logout in production
+    if (process.env.NODE_ENV === 'production') {
+      toast.error('Déconnexion désactivée en mode production');
+      return;
+    }
+    
+    try {
+      await logout();
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-          <Video className="h-6 w-6 text-primary" />
-          ClipWave
+          <Tornado className="h-6 w-6 text-primary" />
+          ClipStorm
         </Link>
 
         <div className="flex items-center gap-4">

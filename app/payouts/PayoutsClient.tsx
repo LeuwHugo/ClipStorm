@@ -28,7 +28,7 @@ export function PayoutsClient() {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Learn how our payment system works, when you get paid, and how to maximize your earnings as a clipper on ClipWave.
+              Learn how our payment system works, when you get paid, and how to maximize your earnings as a clipper on ClipStorm.
             </p>
           </motion.div>
         </div>
@@ -363,7 +363,7 @@ export function PayoutsClient() {
             <CardContent className="pt-8">
               <h2 className="text-2xl font-bold mb-4">Ready to Start Earning?</h2>
               <p className="text-muted-foreground mb-6">
-                Join thousands of clippers who are already earning money on ClipWave.
+                Join thousands of clippers who are already earning money on ClipStorm.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/submit-clips">

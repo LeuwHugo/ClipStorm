@@ -1,11 +1,11 @@
-# 🚀 ClipWave Stripe Integration Setup Guide
+# 🚀 ClipStorm Stripe Integration Setup Guide
 
-This guide will walk you through setting up Stripe payments for your ClipWave platform, enabling creators to pay campaign budgets upfront and clippers to receive payments automatically.
+This guide will walk you through setting up Stripe payments for your ClipStorm platform, enabling creators to pay campaign budgets upfront and clippers to receive payments automatically.
 
 ## 📋 Prerequisites
 
 - Stripe account (create at https://stripe.com)
-- ClipWave application running locally or deployed
+- ClipStorm application running locally or deployed
 - Access to your Stripe dashboard
 - Admin access to configure webhooks
 
@@ -52,7 +52,7 @@ Stripe Connect allows you to pay clippers directly to their bank accounts.
 
 ### 3.2 Configure Connect Settings
 1. In Connect settings, enable **Express accounts**
-2. Set your platform name: "ClipWave"
+2. Set your platform name: "ClipStorm"
 3. Configure your branding (logo, colors)
 4. Set up your platform fee structure (optional)
 
@@ -240,7 +240,7 @@ ngrok http 3000
 
 ## 🎉 Success!
 
-Once you've completed all steps, your ClipWave platform will have:
+Once you've completed all steps, your ClipStorm platform will have:
 - ✅ Secure campaign budget payments
 - ✅ Automatic clipper payouts
 - ✅ Real-time budget tracking

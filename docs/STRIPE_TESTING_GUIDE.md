@@ -1,4 +1,4 @@
-# 🧪 Stripe Testing Guide for ClipWave
+# 🧪 Stripe Testing Guide for ClipStorm
 
 This guide helps you test the complete Stripe integration using test data and scenarios.
 
