@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       .from('users')
       .select('role, stripe_account_id')
       .eq('id', user.id)
-      .single();
+      .single<{ role: 'creator' | 'clipper'; stripe_account_id: string | null }>();
 
     if (profileError || !userProfile || userProfile.role !== 'clipper') {
       return NextResponse.json(
